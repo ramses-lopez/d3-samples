@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <h3>Annual Sales</h3>
+    <div class='revenue_visualization' style="width: 100%">
+      <div id="chart">
+      </div>
+    </div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js" integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y=" crossorigin="anonymous"></script>
+  <script type="text/javascript">
+    let sampleData = [{ "name": "Switzerland", "size": 1238760000 }, { "name": "Canada", "size": 20659235 }, { "name": "Singapore", "size": 17000000 }, { "name": "Turkey", "size": 10000000 }, { "name": "United States", "size": 5001003 }, { "name": "Belgium", "size": 3400393 }, { "name": "France", "size": 1050000 }, { "name": "Spain", "size": 396169 }, { "name": "Italy", "size": 18025 }, { "name": "India", "size": 1000 }, { "name": "United Kingdom", "size": 3 }, { "name": "Korea, Republic of", "size": 0 }, { "name": "Norway", "size": 0 }, { "name": "Australia", "size": 0 }, { "name": "Saudi Arabia", "size": 0 }, { "name": "Ghana", "size": 0 }]
+
+    pie_chart(sampleData, 'chart')
+
+    function pie_chart(data, div_id) {
+      let width = 800;
+      let height = 300;
+      let thickness = 40;
+      let duration = 750;
+      let padding = 10;
+      let opacity = .8;
+      let opacityHover = 1;
+      let otherOpacityOnHover = .8;
+      let tooltipMargin = 13;
+      let radius = Math.min(width-padding, height-padding) / 2;
+      let color = d3.scaleOrdinal(d3.schemeCategory10);
+      let filteredData = data.filter(d => d.size > 0)
+      let svg = d3.select(`.revenue_visualization #${div_id}`)
+        .append('svg')
+        .attr('id', `svg_${div_id}`)
+        .attr('class', 'pie')
+        .attr('width', width)
+        .attr('height', height)
+
+      svg.append('g')
+        .attr('id', 'chart')
+        .attr('width', width/2)
+        .attr('height', height)
+        .attr('x', 0)
+
+      svg.append('g')
+        .attr('id', 'legend')
+        .attr('x', width/2)
+        .style('y', 100)
+
+      let g = svg.select('#chart')
+        .append('g')
+        .attr('transform', `translate(${200}, ${height/2})`)
+      let arc = d3.arc().innerRadius(0).outerRadius(radius)
+      let pie = d3.pie().value(d => d.size).sort(null)
+      let path = g.selectAll('path')
+        .data(pie(filteredData))
+        .enter()
+        .append('g')
+        .append('path')
+        .attr('d', arc)
+        .attr('fill', (d,i) => color(i))
+        .style('opacity', opacity)
+        .style('stroke', 'black')
+        .on("mouseover", d => {
+            d3.selectAll('path').style("opacity", otherOpacityOnHover);
+            d3.select('path').style("opacity", opacityHover);
+
+            let g = d3.select(".revenue_visualization svg")
+              .style("cursor", "pointer")
+              .append("g")
+              .attr("class", "tooltip")
+              .style("opacity", 0);
+
+            g.append("text")
+              .attr("class", "name-text")
+              .text(`${d.data.name} (${d.data.size})`)
+              .attr('text-anchor', 'middle');
+
+            let text = g.select("text");
+            let bbox = text.node().getBBox();
+            let padding = 2;
+
+            g.insert("rect", "text")
+              .attr("x", bbox.x - padding)
+              .attr("y", bbox.y - padding)
+              .attr("width", bbox.width + (padding*2))
+              .attr("height", bbox.height + (padding*2))
+              .style("fill", "white")
+              .style("opacity", 0.75);
+        })
+        .on("mousemove", d => {
+          let mousePosition = d3.mouse(this)
+          let x = mousePosition[0] + width/2
+          let y = mousePosition[1] + height/2 - tooltipMargin
+          let text = d3.select('.tooltip text')
+          let bbox = text.node().getBBox()
+
+          if(x - bbox.width/2 < 0) {
+            x = bbox.width/2
+          }
+          else if(width - x - bbox.width/2 < 0) {
+            x = width - bbox.width/2
+          }
+
+          if(y - bbox.height/2 < 0) {
+            y = bbox.height + tooltipMargin * 2
+          }
+          else if(height - y - bbox.height/2 < 0) {
+            y = height - bbox.height/2
+          }
+
+          d3.select('.tooltip').style("opacity", 1).attr('transform',`translate(${x}, ${y})`)
+        })
+        .on("mouseout", d => {
+          d3.select(".revenue_visualization svg")
+            .style("cursor", "none")
+            .select(".tooltip")
+            .remove()
+          d3.selectAll('path').style("opacity", opacity)
+        })
+        .on("touchstart", d => {
+          d3.select(".revenue_visualization svg").style("cursor", "none")
+        })
+        .each(function(d, i) { this._current = i })
+
+      let squareSize = 12
+
+      let squareGroup = svg.selectAll('rect')
+                      .data(filteredData)
+                      .enter()
+                      .append('rect')
+                      .attr('transform', `translate(${width/2}, ${0})`)
+                      .attr('x', 0)
+                      .attr('y', (d,i) => i * 20 + 5)
+                      .attr('width', 12)
+                      .attr('height', 12)
+                      .attr('stroke', 'black')
+                      .attr('fill', (d, i) => color(i))
+
+      let textGroup = svg.select('#legend')
+                      .selectAll('text')
+                      .data(filteredData)
+                      .enter()
+                      .append('text')
+                      .attr('transform', `translate(${width/2}, ${0})`)
+                      .attr('y', (d,i) => 20 * i + 15)
+                      .attr('x', squareSize + 5)
+                      .text(d => `${d.name} (${d.size.toLocaleString()})`)
+                      .style('font-family', 'arial')
+                      .style('font-size', '11px')
+                      // .attr('fill', (d, i) => color(i))
+
+      d3.select(`#${div_id}`)
+        .append("a")
+        .html("Download chart")
+        .attr('href', `javascript:void(0)`)
+        .attr('onclick', `downloadSVG(document.getElementById('svg_${div_id}'))`)
+    }
+
+    function downloadSVG(svg){
+      // Promisify the image-loading process
+      function loadImage(url) {
+        return new Promise(r => {
+          let i = new Image()
+          i.onload = (() => r(i))
+          i.src = url; })
+      }
+
+      let svgStr = (new XMLSerializer()).serializeToString(svg)
+
+      return loadImage(`data:image/svg+xml;base64,${window.btoa(svgStr)}`)
+      .then(img => {
+        let canvas = document.createElement('canvas');
+        let w = svg.width.baseVal.value
+        let h = svg.height.baseVal.value
+
+        let ctx = canvas.getContext('2d')
+        canvas.width = w
+        canvas.height = h
+        ctx.drawImage(img, 0, 0, w, h)
+
+        canvas.toBlob(function(blob){
+          let link = document.createElement('a')
+          link.download = `chart_${svg.id}.png`
+          link.href = URL.createObjectURL(blob);
+          link.click()
+          link.remove()
+          canvas.remove()
+        },'image/png')
+      })
+    }
+  </script>
+
+</html>
