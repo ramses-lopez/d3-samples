@@ -37,7 +37,7 @@
         .attr('width', width)
         .attr('height', height)
         .style('padding', '5px')
-        .style('border', '1px solid black')
+//        .style('border', '1px solid black')
 
       //group for chart
       svg.append('g')
@@ -55,6 +55,7 @@
         .style('y', legendPadding)
 
       // debug lines
+      /*
       svg.append('line')
         .attr('x1', 0)
         .attr('x2', width)
@@ -69,11 +70,7 @@
         .attr('y2', height)
         .attr('stroke', 'red')
         .attr('stroke-dasharray', '1')
-
-      // to center legend
-      // calculate size of legend: data size * multipliers
-      // (height of container - size of legend)/2
-      // this will be the upper padding
+      */
 
       let g = svg.select('#chart')
         .append('g')
@@ -88,7 +85,7 @@
         .attr('d', arc)
         .attr('fill', (d,i) => color(i))
         .style('opacity', opacity)
-        .style('stroke', 'black')
+        .style('stroke', '#000000')
         .on("mouseover", d => {
           d3.selectAll('path').style("opacity", otherOpacityOnHover);
           d3.select('path').style("opacity", opacityHover);
@@ -150,7 +147,7 @@
 
       // make this the font size to be consistent
       let squareSize = 12
-      let legendPositionRatio = 0.6
+      let legendPositionRatio = 0.65
       let squareGroup = svg.selectAll('rect')
                       .data(filteredData)
                       .enter()
