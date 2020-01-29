@@ -13,7 +13,7 @@
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js" integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y=" crossorigin="anonymous"></script>
   <script type="text/javascript">
-    let sampleData = [{ "name": "Switzerland", "size": 1238760000 }, { "name": "Canada", "size": 20659235 }, { "name": "Singapore", "size": 17000000 }, { "name": "Turkey", "size": 10000000 }, { "name": "United States", "size": 5001003 }, { "name": "Belgium", "size": 3400393 }, { "name": "France", "size": 1050000 }, { "name": "Spain", "size": 396169 }, { "name": "Italy", "size": 18025 }, { "name": "India", "size": 1000 }, { "name": "United Kingdom", "size": 3 }, { "name": "Korea, Republic of", "size": 0 }, { "name": "Norway", "size": 0 }, { "name": "Australia", "size": 0 }, { "name": "Saudi Arabia", "size": 0 }, { "name": "Ghana", "size": 0 }]
+    let sampleData = [{"name": "Venezuela", "size": 100000000},{ "name": "Switzerland", "size": 123876000 }, { "name": "Canada", "size": 20659235 }, { "name": "Singapore", "size": 17000000 }, { "name": "Turkey", "size": 10000000 }, { "name": "United States", "size": 5001003 }, { "name": "Belgium", "size": 3400393 }, { "name": "France", "size": 1050000 }, { "name": "Spain", "size": 396169 }, { "name": "Italy", "size": 18025 }, { "name": "India", "size": 1000 }, { "name": "United Kingdom", "size": 3 }, { "name": "Korea, Republic of", "size": 0 }, { "name": "Norway", "size": 0 }, { "name": "Australia", "size": 0 }, { "name": "Saudi Arabia", "size": 0 }, { "name": "Ghana", "size": 0 }]
 
     pie_chart(sampleData, 'chart')
 
@@ -29,7 +29,12 @@
       let tooltipMargin = 13;
       let radius = Math.min(width, height) / 2 - padding ;
       let color = d3.scaleOrdinal(d3.schemeCategory10);
-      let filteredData = data.filter(d => d.size > 0)
+      let filteredData =
+        data.filter(d => d.size > 0)
+            .map(d => {
+              d.formattedSize = d.size.toLocaleString()
+              return d
+            })
       let svg = d3.select(`.revenue_visualization #${div_id}`)
         .append('svg')
         .attr('id', `svg_${div_id}`)
@@ -37,7 +42,6 @@
         .attr('width', width)
         .attr('height', height)
         .style('padding', '5px')
-//        .style('border', '1px solid black')
 
       //group for chart
       svg.append('g')
@@ -46,31 +50,10 @@
         .attr('height', height)
         .attr('x', 0)
 
-      let legendPadding = (height - (filteredData.length * 20 + 5))/2
-
       //group for legend
       svg.append('g')
         .attr('id', 'legend')
         .attr('x', width/2)
-        .style('y', legendPadding)
-
-      // debug lines
-      /*
-      svg.append('line')
-        .attr('x1', 0)
-        .attr('x2', width)
-        .attr('y1', height/2)
-        .attr('y2', height/2)
-        .attr('stroke', 'red')
-        .attr('stroke-dasharray', '1')
-      svg.append('line')
-        .attr('x1', width/2)
-        .attr('x2', width/2)
-        .attr('y1', 0)
-        .attr('y2', height)
-        .attr('stroke', 'red')
-        .attr('stroke-dasharray', '1')
-      */
 
       let g = svg.select('#chart')
         .append('g')
@@ -86,23 +69,27 @@
         .attr('fill', (d,i) => color(i))
         .style('opacity', opacity)
         .style('stroke', '#000000')
-        .on("mouseover", d => {
+        .on("mouseover", (d, i, paths)=> {
           d3.selectAll('path').style("opacity", otherOpacityOnHover);
-          d3.select('path').style("opacity", opacityHover);
+          d3.select(paths[i]).style("opacity", opacityHover);
 
           let g = d3.select(".revenue_visualization svg")
             .style("cursor", "pointer")
             .append("g")
             .attr("class", "tooltip")
-            .style("opacity", 0);
+            .style("opacity", 1);
 
           g.append("text")
             .attr("class", "name-text")
-            .text(`${d.data.name} (${d.data.size})`)
-            .attr('text-anchor', 'middle');
+            .text(`${d.data.name} (${d.data.formattedSize})`)
+            .attr('text-anchor', 'middle')
+            .attr('x', d3.event.pageX)
+            .attr('y', d3.event.pageY)
+            .style('font-family', 'arial')
+            .style('font-size', '11px')
 
-          let text = g.select("text");
-          let bbox = text.node().getBBox();
+          let text = g.select("text")
+          let bbox = text.node().getBBox()
           let padding = 2;
 
           g.insert("rect", "text")
@@ -110,67 +97,51 @@
             .attr("y", bbox.y - padding)
             .attr("width", bbox.width + (padding*2))
             .attr("height", bbox.height + (padding*2))
-            .style("fill", "white")
+            .style("fill", "#cccccc")
             .style("opacity", 0.75);
         })
         .on("mousemove", d => {
-          let mousePosition = d3.mouse(this)
-          let x = mousePosition[0] + width/2
-          let y = mousePosition[1] + height/2 - tooltipMargin
-          let text = d3.select('.tooltip text')
-          let bbox = text.node().getBBox()
-
-          if(x - bbox.width/2 < 0) {
-            x = bbox.width/2
-          }
-          else if(width - x - bbox.width/2 < 0) {
-            x = width - bbox.width/2
-          }
-
-          if(y - bbox.height/2 < 0) {
-            y = bbox.height + tooltipMargin * 2
-          }
-          else if(height - y - bbox.height/2 < 0) {
-            y = height - bbox.height/2
-          }
-
-          d3.select('.tooltip').style("opacity", 1).attr('transform',`translate(${x}, ${y})`)
+          d3.select('.tooltip')
+            .style("opacity", 1)
+            .attr('x', d3.event.pageX )
+            .attr('y', d3.event.pageY )
         })
         .on("mouseout", d => {
-          d3.select(".revenue_visualization svg")
-            .style("cursor", "none")
+          d3.select('.revenue_visualization svg')
+            .style('cursor', 'pointer')
             .select(".tooltip")
             .remove()
           d3.selectAll('path').style("opacity", opacity)
         })
-        .each(function(d, i) { this._current = i })
+        .each((d, i) => this._current = i )
 
-      // make this the font size to be consistent
       let squareSize = 12
+      let legendPadding = (height - (filteredData.length * 20 + 5))/2
       let legendPositionRatio = 0.65
-      let squareGroup = svg.selectAll('rect')
-                      .data(filteredData)
-                      .enter()
-                      .append('rect')
-                      .attr('transform', `translate(${width*legendPositionRatio}, ${40})`)
-                      .attr('x', 0)
-                      .attr('y', (d,i) => i * 20 + 5)
-                      .attr('width', squareSize)
-                      .attr('height', squareSize)
-                      .attr('stroke', 'black')
-                      .attr('fill', (d, i) => color(i))
 
-      let textGroup = svg.select('#legend')
-                      .selectAll('text')
-                      .data(filteredData)
-                      .enter()
-                      .append('text')
-                      .attr('transform', `translate(${width * legendPositionRatio + 5}, ${40})`)
-                      .attr('y', (d,i) => 20 * i + 15)
-                      .attr('x', squareSize + 5)
-                      .text(d => `${d.name} (${d.size.toLocaleString()})`)
-                      .style('font-family', 'arial')
-                      .style('font-size', '11px')
+      svg.selectAll('rect')
+        .data(filteredData)
+        .enter()
+        .append('rect')
+        .attr('transform', `translate(${width*legendPositionRatio}, ${legendPadding})`)
+        .attr('x', 0)
+        .attr('y', (d,i) => i * 20 + 5)
+        .attr('width', squareSize)
+        .attr('height', squareSize)
+        .attr('stroke', 'black')
+        .attr('fill', (d, i) => color(i))
+
+      svg.select('#legend')
+          .selectAll('text')
+          .data(filteredData)
+          .enter()
+          .append('text')
+          .attr('transform', `translate(${width * legendPositionRatio + 5}, ${legendPadding})`)
+          .attr('y', (d,i) => 20 * i + 15)
+          .attr('x', squareSize + 5)
+          .text(d => `${d.name} (${d.formattedSize})`)
+          .style('font-family', 'arial')
+          .style('font-size', '11px')
 
       d3.select(`#${div_id}`)
         .append('a')
