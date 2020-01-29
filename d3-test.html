@@ -18,7 +18,7 @@
     pie_chart(sampleData, 'chart')
 
     function pie_chart(data, div_id) {
-      let width = 800;
+      let width = 500;
       let height = 300;
       let thickness = 40;
       let duration = 750;
@@ -27,7 +27,7 @@
       let opacityHover = 1;
       let otherOpacityOnHover = .8;
       let tooltipMargin = 13;
-      let radius = Math.min(width-padding, height-padding) / 2;
+      let radius = Math.min(width, height) / 2 - padding ;
       let color = d3.scaleOrdinal(d3.schemeCategory10);
       let filteredData = data.filter(d => d.size > 0)
       let svg = d3.select(`.revenue_visualization #${div_id}`)
@@ -36,21 +36,48 @@
         .attr('class', 'pie')
         .attr('width', width)
         .attr('height', height)
+        .style('padding', '5px')
+        .style('border', '1px solid black')
 
+      //group for chart
       svg.append('g')
         .attr('id', 'chart')
         .attr('width', width/2)
         .attr('height', height)
         .attr('x', 0)
 
+      let legendPadding = (height - (filteredData.length * 20 + 5))/2
+
+      //group for legend
       svg.append('g')
         .attr('id', 'legend')
         .attr('x', width/2)
-        .style('y', 100)
+        .style('y', legendPadding)
+
+      // debug lines
+      svg.append('line')
+        .attr('x1', 0)
+        .attr('x2', width)
+        .attr('y1', height/2)
+        .attr('y2', height/2)
+        .attr('stroke', 'red')
+        .attr('stroke-dasharray', '1')
+      svg.append('line')
+        .attr('x1', width/2)
+        .attr('x2', width/2)
+        .attr('y1', 0)
+        .attr('y2', height)
+        .attr('stroke', 'red')
+        .attr('stroke-dasharray', '1')
+
+      // to center legend
+      // calculate size of legend: data size * multipliers
+      // (height of container - size of legend)/2
+      // this will be the upper padding
 
       let g = svg.select('#chart')
         .append('g')
-        .attr('transform', `translate(${200}, ${height/2})`)
+        .attr('transform', `translate(${radius}, ${height/2})`)
       let arc = d3.arc().innerRadius(0).outerRadius(radius)
       let pie = d3.pie().value(d => d.size).sort(null)
       let path = g.selectAll('path')
@@ -63,31 +90,31 @@
         .style('opacity', opacity)
         .style('stroke', 'black')
         .on("mouseover", d => {
-            d3.selectAll('path').style("opacity", otherOpacityOnHover);
-            d3.select('path').style("opacity", opacityHover);
+          d3.selectAll('path').style("opacity", otherOpacityOnHover);
+          d3.select('path').style("opacity", opacityHover);
 
-            let g = d3.select(".revenue_visualization svg")
-              .style("cursor", "pointer")
-              .append("g")
-              .attr("class", "tooltip")
-              .style("opacity", 0);
+          let g = d3.select(".revenue_visualization svg")
+            .style("cursor", "pointer")
+            .append("g")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
 
-            g.append("text")
-              .attr("class", "name-text")
-              .text(`${d.data.name} (${d.data.size})`)
-              .attr('text-anchor', 'middle');
+          g.append("text")
+            .attr("class", "name-text")
+            .text(`${d.data.name} (${d.data.size})`)
+            .attr('text-anchor', 'middle');
 
-            let text = g.select("text");
-            let bbox = text.node().getBBox();
-            let padding = 2;
+          let text = g.select("text");
+          let bbox = text.node().getBBox();
+          let padding = 2;
 
-            g.insert("rect", "text")
-              .attr("x", bbox.x - padding)
-              .attr("y", bbox.y - padding)
-              .attr("width", bbox.width + (padding*2))
-              .attr("height", bbox.height + (padding*2))
-              .style("fill", "white")
-              .style("opacity", 0.75);
+          g.insert("rect", "text")
+            .attr("x", bbox.x - padding)
+            .attr("y", bbox.y - padding)
+            .attr("width", bbox.width + (padding*2))
+            .attr("height", bbox.height + (padding*2))
+            .style("fill", "white")
+            .style("opacity", 0.75);
         })
         .on("mousemove", d => {
           let mousePosition = d3.mouse(this)
@@ -119,22 +146,20 @@
             .remove()
           d3.selectAll('path').style("opacity", opacity)
         })
-        .on("touchstart", d => {
-          d3.select(".revenue_visualization svg").style("cursor", "none")
-        })
         .each(function(d, i) { this._current = i })
 
+      // make this the font size to be consistent
       let squareSize = 12
-
+      let legendPositionRatio = 0.6
       let squareGroup = svg.selectAll('rect')
                       .data(filteredData)
                       .enter()
                       .append('rect')
-                      .attr('transform', `translate(${width/2}, ${0})`)
+                      .attr('transform', `translate(${width*legendPositionRatio}, ${40})`)
                       .attr('x', 0)
                       .attr('y', (d,i) => i * 20 + 5)
-                      .attr('width', 12)
-                      .attr('height', 12)
+                      .attr('width', squareSize)
+                      .attr('height', squareSize)
                       .attr('stroke', 'black')
                       .attr('fill', (d, i) => color(i))
 
@@ -143,17 +168,16 @@
                       .data(filteredData)
                       .enter()
                       .append('text')
-                      .attr('transform', `translate(${width/2}, ${0})`)
+                      .attr('transform', `translate(${width * legendPositionRatio + 5}, ${40})`)
                       .attr('y', (d,i) => 20 * i + 15)
                       .attr('x', squareSize + 5)
                       .text(d => `${d.name} (${d.size.toLocaleString()})`)
                       .style('font-family', 'arial')
                       .style('font-size', '11px')
-                      // .attr('fill', (d, i) => color(i))
 
       d3.select(`#${div_id}`)
-        .append("a")
-        .html("Download chart")
+        .append('a')
+        .text("Download chart")
         .attr('href', `javascript:void(0)`)
         .attr('onclick', `downloadSVG(document.getElementById('svg_${div_id}'))`)
     }
