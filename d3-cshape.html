@@ -20,7 +20,6 @@
   <script type="text/javascript">
 
     let sampleData = [
-      { "name": "All Orgs", "size": 100 },
       { "name": "Aboriginal", "size": 24 },
       { "name": "Veteran", "size": 67 },
       { "name": "Women", "size": 93 },
@@ -30,7 +29,7 @@
    cPie(sampleData, 'chart')
 
   function cPie(data, containerId) {
-    let width = 400
+    let width = 350
     let height = 300
     let padding = 10
     let opacity = 0.8
@@ -70,11 +69,28 @@
     let chartYPosition = (height)/2
 
     chartContainer.selectAll('path')
+      .data([{size: 100}])
+      .enter()
+      .append('path')
+      .attr('d', d3.arc()
+                  .innerRadius(innerRadius - 2 * discMargin)
+                  .outerRadius(innerRadius - discMargin)
+                  .startAngle(0)
+                  .endAngle(d => scale(d.size))
+      )
+      .attr('fill', '#000000')
+      .attr('x', chartXPosition)
+      .attr('y', chartYPosition)
+      .attr('transform', `translate(${chartXPosition},${chartYPosition}) rotate(${apertureArc})`)
+      .attr('stroke', '#000000')
+
+    chartContainer.selectAll('.data-disc')
       .data(filteredData)
       .enter()
       .append('path')
+      .attr('class', 'data-disc')
       .attr('d', arc)
-      .attr('fill', (d,i) => color(i))
+      .attr('fill', (d,i) => { console.log(i);return color(i) })
       .attr('x', chartXPosition)
       .attr('y', chartYPosition)
       .attr('transform', `translate(${chartXPosition},${chartYPosition}) rotate(${apertureArc})`)
@@ -82,7 +98,7 @@
       .style('opacity', opacity)
       .on("mouseover", (d, i, paths) => {
 
-        d3.selectAll('path').style("opacity", opacity)
+        d3.selectAll('.data-disc').style("opacity", opacity)
         d3.select(paths[i]).style("opacity", opacityHover)
 
         let g = chartContainer
@@ -117,7 +133,7 @@
           .remove()
 
         chartContainer
-          .selectAll('path')
+          .selectAll('.data-disc')
           .style("opacity", opacity)
           .style('cursor', 'pointer')
       })
