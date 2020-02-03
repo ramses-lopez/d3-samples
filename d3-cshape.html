@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      svg {
+        background-color: #eeeeee;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart">
+    </div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
+          integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
+          crossorigin="anonymous">
+  </script>
+  <script type="text/javascript">
+
+    let sampleData = [
+      { "name": "All Orgs", "size": 100 },
+      { "name": "Aboriginal", "size": 24 },
+      { "name": "Veteran", "size": 67 },
+      { "name": "Women", "size": 93 },
+      { "name": "LGBT", "size": 10 }
+    ]
+
+   cPie(sampleData, 'chart')
+
+  function cPie(data, containerId) {
+    let width = 400
+    let height = 300
+    let padding = 10
+    let opacity = 0.8
+    let opacityHover = 1
+    let legendPositionRatio = 0.70
+    let discWidth = 15
+    let innerRadius = 50
+    let discMargin = 3
+
+    let radius = Math.min(width, height) / 2 - padding
+    let color = d3.scaleOrdinal(d3.schemeCategory10)
+    // max angle will be 90% to create a gap
+    let scale = d3.scaleLinear().domain([0, 100]).range([0, (2 * Math.PI * 0.90)])
+    let filteredData = data.filter(d => d.size > 0).sort((a,b) => a.size < b.size)
+
+    let svg = d3.select(`#${containerId}`)
+      .append('svg')
+      .attr('id', `svg_${containerId}`)
+      .attr('width', width)
+      .attr('height', height)
+      .style('padding', '10px')
+
+    //group for chart
+    let chartContainer = svg.append('g').attr('id', 'chart-container')
+    //group for legend
+    let legendContainer = svg.append('g').attr('id', 'legend')
+
+    // Size of the aperture: 90 degrees + 10% of pi, converted to degrees
+    let apertureArc = 90 + ((2*Math.PI * 0.1)/2) * 180/Math.PI
+    let arc = d3.arc()
+                .innerRadius((d,i) => i * discWidth + innerRadius)
+                .outerRadius((d,i) => (i + 1) * discWidth + innerRadius - discMargin)
+                .startAngle(0)
+                .endAngle(d => scale(d.size))
+
+    let chartXPosition = (width * legendPositionRatio)/2
+    let chartYPosition = (height)/2
+
+    chartContainer.selectAll('path')
+      .data(filteredData)
+      .enter()
+      .append('path')
+      .attr('d', arc)
+      .attr('fill', (d,i) => color(i))
+      .attr('x', chartXPosition)
+      .attr('y', chartYPosition)
+      .attr('transform', `translate(${chartXPosition},${chartYPosition}) rotate(${apertureArc})`)
+      .attr('stroke', '#000000')
+      .style('opacity', opacity)
+      .on("mouseover", (d, i, paths) => {
+
+        d3.selectAll('path').style("opacity", opacity)
+        d3.select(paths[i]).style("opacity", opacityHover)
+
+        let g = chartContainer
+          .style("cursor", "pointer")
+          .append("g")
+          // .attr('transform', `translate(${chartXPosition/2},${chartYPosition/2})`)
+          .attr("class", "tooltip")
+          .style("opacity", 1)
+
+        g.append("text")
+          .text(d.name)
+          .attr('text-anchor', 'middle')
+          .attr('x', chartXPosition)
+          .attr('y', chartYPosition)
+          .attr('dy', -10)
+          .style('font-family', 'arial')
+          .style('font-size', '14px')
+          .style('font-weight', 'bold')
+
+        g.append("text")
+          .text(`${d.size}%`)
+          .attr('text-anchor', 'middle')
+          .attr('x', chartXPosition)
+          .attr('y', chartYPosition)
+          .attr('dy', 10)
+          .style('font-family', 'arial')
+          .style('font-size', '20px')
+      })
+      .on("mouseout", d => {
+        chartContainer
+          .selectAll(".tooltip")
+          .remove()
+
+        chartContainer
+          .selectAll('path')
+          .style("opacity", opacity)
+          .style('cursor', 'pointer')
+      })
+
+    // LEGEND
+    let squareSize = 12
+    let legendPadding = (height - (filteredData.length * 20 + 5))/2
+
+    svg.selectAll('rect')
+      .data(filteredData)
+      .enter()
+      .append('rect')
+      .attr('transform', `translate(${width*legendPositionRatio}, ${legendPadding})`)
+      .attr('x', 0)
+      .attr('y', (d,i) => i * 20 + 5)
+      .attr('width', squareSize)
+      .attr('height', squareSize)
+      .attr('stroke', 'black')
+      .attr('fill', (d, i) => color(i))
+      .style('opacity', opacity)
+
+    svg.select('#legend')
+        .selectAll('text')
+        .data(filteredData)
+        .enter()
+        .append('text')
+        .attr('transform', `translate(${width * legendPositionRatio + 5}, ${legendPadding})`)
+        .attr('y', (d,i) => 20 * i + 15)
+        .attr('x', squareSize + 5)
+        .text(d => `${d.name} (${d.size}%)`)
+        .style('font-family', 'Arial')
+        .style('font-size', '11px')
+
+    d3.select(`#${containerId}`)
+      .append('a')
+      .text("Download chart")
+      .attr('href', `javascript:void(0)`)
+      .attr('onclick', `downloadSVG(document.getElementById('svg_${containerId}'))`)
+
+    // FOR DEBUG
+    // chartContainer
+    //   .append('text')
+    //   .text('TEST')
+    //   .attr('x', chartXPosition)
+    //   .attr('y', chartYPosition)
+    //   .attr('text-anchor', 'middle')
+    // chartContainer
+    //   .append('text')
+    //   .text('123')
+    //   .attr('x', chartXPosition)
+    //   .attr('y', chartYPosition)
+    //   .attr('dy', 30)
+    //   .attr('text-anchor', 'middle')
+
+    // FOR DEBUG
+    // svg.append('line')
+    //   .attr('x1', '0')
+    //   .attr('x2', '100%')
+    //   .attr('y1','50%')
+    //   .attr('y2','50%')
+    //   .attr('stroke','blue')
+    //   .attr('stroke-dasharray','4')
+
+    // FOR DEBUG
+    // svg.append('line')
+    //   .attr('y1', '0')
+    //   .attr('y2', '100%')
+    //   .attr('x1',`${legendPositionRatio * 100}%`)
+    //   .attr('x2',`${legendPositionRatio * 100}%`)
+    //   .attr('stroke','blue')
+    //   .attr('stroke-dasharray','4')
+  }
+
+  function downloadSVG(svg){
+    // Promisify the image-loading process
+    function loadImage(url) {
+      return new Promise(r => {
+        let i = new Image()
+        i.onload = (() => r(i))
+        i.src = url;
+      })
+    }
+
+    let svgStr = (new XMLSerializer()).serializeToString(svg)
+
+    return loadImage(`data:image/svg+xml;base64,${window.btoa(svgStr)}`)
+    .then(img => {
+      let canvas = document.createElement('canvas');
+      let w = svg.width.baseVal.value
+      let h = svg.height.baseVal.value
+
+      let ctx = canvas.getContext('2d')
+      canvas.width = w
+      canvas.height = h
+      ctx.drawImage(img, 0, 0, w, h)
+
+      canvas.toBlob(function(blob){
+        let link = document.createElement('a')
+        link.download = `chart_${svg.id}.png`
+        link.href = URL.createObjectURL(blob);
+        link.click()
+        link.remove()
+        canvas.remove()
+      },'image/png')
+    })
+  }
+
+  </script>
+
+</html>
