@@ -11,8 +11,8 @@
   </head>
   <body>
     <div id="chart3"></div>
-    <div id="chart"></div>
     <div id="chart2"></div>
+    <div id="chart"></div>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
           integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
@@ -21,10 +21,10 @@
   <script type="text/javascript">
 
     let sampleData = [
-      { "name": "Aboriginal", "size": 100 },
-      { "name": "Veteran", "size": 100 },
-      { "name": "Women", "size": 100 },
-      { "name": "LGBT", "size": 100 }
+      { "name": "Aboriginal", "size": 5 },
+      { "name": "Veteran", "size": 25 },
+      { "name": "Women", "size": 75 },
+      { "name": "LGBT", "size": 95 }
     ]
 
     let ownershipData = [
@@ -85,9 +85,9 @@
       }
     ]
 
-    cPie(sampleData, 'chart3', {width: 450, height: 350, apertureSize: 0})
-    cPie(ownershipData, 'chart', {width: 450, height: 350, apertureSize: 0.1, discRotation: 270})
+    cPie(sampleData, 'chart3', {width: 450, height: 350, discRotation: 270})
     cPie(employeeData, 'chart2', {width: 450, height: 350, legendPositionRatio: 0.6})
+    cPie(ownershipData, 'chart', {width: 450, height: 350, apertureSize: 0.1, discRotation: 270})
 
     function cPie(data, containerId, options) {
       const { width = 350,
@@ -109,8 +109,9 @@
                           .filter(d => d.size > 0)
                           .sort((a,b) => a.size < b.size)
       // max angle will be 90% to create a gap
-      // let topValue = Math.max(...data.map( x => parseInt(x.size)))
-      let topValue = filteredData.map(x => x.size).reduce( (a, x) => x + a, 0)
+      // const topValue = Math.max(...data.map( x => parseInt(x.size)))
+      // const topValue = filteredData.map(x => x.size).reduce( (a, x) => x + a, 0)
+      const topValue = 100;
 
       let domainScale = d3.scaleLinear()
         .domain([0, topValue])
@@ -293,11 +294,11 @@
       //   .style('font-family', 'Arial')
       //   .style('font-size', '20px')
 
-      d3.select(`#${containerId}`)
-        .append('a')
-        .text("Download chart")
-        .attr('href', `javascript:void(0)`)
-        .attr('onclick', `downloadSVG(document.getElementById('svg_${containerId}'))`)
+      // d3.select(`#${containerId}`)
+      //   .append('a')
+      //   .text("Download chart")
+      //   .attr('href', `javascript:void(0)`)
+      //   .attr('onclick', `downloadSVG(document.getElementById('svg_${containerId}'))`)
     }
 
     function downloadSVG(svg){
