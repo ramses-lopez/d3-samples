@@ -10,8 +10,9 @@
     </style>
   </head>
   <body>
-    <div id="chart">
-    </div>
+    <div id="chart3"></div>
+    <div id="chart"></div>
+    <div id="chart2"></div>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
           integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
@@ -20,38 +21,108 @@
   <script type="text/javascript">
 
     let sampleData = [
-      { "name": "Aboriginal", "size": 24 },
-      { "name": "Veteran", "size": 67 },
-      { "name": "Women", "size": 93 },
-      { "name": "LGBT", "size": 10 }
+      { "name": "Aboriginal", "size": 100 },
+      { "name": "Veteran", "size": 100 },
+      { "name": "Women", "size": 100 },
+      { "name": "LGBT", "size": 100 }
     ]
 
-    cPie(sampleData, 'chart')
+    let ownershipData = [
+      {
+        "name": "Aboriginal Owned",
+        "size": "30"
+      },
+      {
+        "name": "Veteran Owned",
+        "size": "9"
+      },
+      {
+        "name": "Women Led",
+        "size": "17"
+      },
+      {
+        "name": "Women Owned",
+        "size": "27"
+      }
+    ]
 
-    function cPie(data, containerId) {
-      let width = 350
-      let height = 300
-      let padding = 10
-      let opacity = 0.85
-      let opacityHover = 1
-      let legendPositionRatio = 0.70
-      let discWidth = 15
-      let innerRadius = 50
-      let discMargin = 3
+    let employeeData = [
+      {
+        "name": "1 employee",
+        "size": "8"
+      },
+      {
+        "name": "1001-5000 employees",
+        "size": "25"
+      },
+      {
+        "name": "11-50 employees",
+        "size": "230"
+      },
+      {
+        "name": "151-250 employees",
+        "size": "43"
+      },
+      {
+        "name": "2-10 employees",
+        "size": "119"
+      },
+      {
+        "name": "251-500 employees",
+        "size": "20"
+      },
+      {
+        "name": "5001+ employees",
+        "size": "11"
+      },
+      {
+        "name": "501-1000 employees",
+        "size": "23"
+      },
+      {
+        "name": "51-150 employees",
+        "size": "131"
+      }
+    ]
 
-      let radius = Math.min(width, height) / 2 - padding
+    cPie(sampleData, 'chart3', {width: 450, height: 350, apertureSize: 0})
+    cPie(ownershipData, 'chart', {width: 450, height: 350, apertureSize: 0.1, discRotation: 270})
+    cPie(employeeData, 'chart2', {width: 450, height: 350, legendPositionRatio: 0.6})
+
+    function cPie(data, containerId, options) {
+      const { width = 350,
+        height = 300,
+        scale = 1,
+        opacity = 0.75,
+        opacityHover = 1,
+        legendPositionRatio = 0.70,
+        discWidth = 15,
+        innerRadius = 30,
+        discMargin = 0,
+        apertureSize = 0,
+        discRotation = 0
+      } = options
+
+      let radius = Math.min(width, height) / 2
       let color = d3.scaleOrdinal(d3.schemeCategory10)
+      let filteredData = data.map(d => { return { name: d.name, size: parseInt(d.size)} })
+                          .filter(d => d.size > 0)
+                          .sort((a,b) => a.size < b.size)
       // max angle will be 90% to create a gap
-      let scale = d3.scaleLinear().domain([0, 100]).range([0, (2 * Math.PI * 0.90)])
-      let filteredData = data.filter(d => d.size > 0).sort((a,b) => a.size < b.size)
+      // let topValue = Math.max(...data.map( x => parseInt(x.size)))
+      let topValue = filteredData.map(x => x.size).reduce( (a, x) => x + a, 0)
+
+      let domainScale = d3.scaleLinear()
+        .domain([0, topValue])
+        .range([0, (2 * Math.PI * (1-apertureSize))])
 
       let svg = d3.select(`#${containerId}`)
         .append('svg')
         .attr('id', `svg_${containerId}`)
         .attr('width', width)
         .attr('height', height)
-        .attr('transform', 'scale(1.2)')
-        .style('padding', '10px')
+        .attr('transform', `scale(${scale})`)
+        .style('padding', '5px')
 
       //group for chart
       let chartContainer = svg.append('g').attr('id', 'chart-container')
@@ -59,25 +130,26 @@
       let legendContainer = svg.append('g').attr('id', 'legend')
 
       // Size of the aperture: 90 degrees + 10% of pi, converted to degrees
-      let apertureArc = 90 + ((2*Math.PI * 0.1)/2) * 180/Math.PI
+      let apertureArc = discRotation + ((2*Math.PI * apertureSize)/2) * 180/Math.PI
       let arc = d3.arc()
                   .innerRadius((d,i) => i * discWidth + innerRadius)
                   .outerRadius((d,i) => (i + 1) * discWidth + innerRadius - discMargin)
                   .startAngle(0)
-                  .endAngle(d => scale(d.size))
+                  .endAngle(d => domainScale(d.size))
 
       let chartXPosition = (width * legendPositionRatio)/2
       let chartYPosition = (height)/2
 
+      // Set placeholder line that always represent 100%
       chartContainer.selectAll('path')
-        .data([{size: 100}])
+        .data([{size: topValue}])
         .enter()
         .append('path')
         .attr('d', d3.arc()
                     .innerRadius(innerRadius - 2 * discMargin)
                     .outerRadius(innerRadius - discMargin)
                     .startAngle(0)
-                    .endAngle(d => scale(d.size))
+                    .endAngle(d => domainScale(d.size))
         )
         .attr('fill', '#000000')
         .attr('x', chartXPosition)
@@ -90,6 +162,7 @@
         .enter()
         .append('path')
         .attr('class', 'data-disc')
+        .attr('id', (d,i) => `data-disc-${i}`)
         .attr('d', arc)
         .attr('fill', (d,i) => color(i))
         .attr('x', chartXPosition)
@@ -105,45 +178,49 @@
           let g = chartContainer
             .style("cursor", "pointer")
             .append("g")
-            // .attr('transform', `translate(${chartXPosition/2},${chartYPosition/2})`)
             .attr("class", "tooltip")
             .style("opacity", 1)
 
+          svg.select(`#legend-${i}`).style('font-weight', 'bold')
+
+          const labelXPosition = chartXPosition
+          const labelYPosition = height - 50
 
           g.append("text")
             .text(d.name)
             .attr('text-anchor', 'middle')
-            .attr('x', chartXPosition)
-            .attr('y', chartYPosition)
-            .attr('dy', -5)
-            .style('font-family', 'arial')
-            .style('font-size', '14px')
-            // .style('font-weight', 'bold')
-
-          g.append("text")
-            .text(`${d.size}%`)
-            .attr('text-anchor', 'middle')
-            .attr('x', chartXPosition)
-            .attr('y', chartYPosition)
+            .attr('x', labelXPosition)
+            .attr('y', labelYPosition)
             .attr('dy', 20)
             .style('font-family', 'arial')
-            .style('font-size', '20px')
+            .style('font-size', '14px')
+
+          g.append("text")
+            .text(d.size)
+            .attr('text-anchor', 'middle')
+            .attr('x', labelXPosition)
+            .attr('y', labelYPosition)
+            .attr('dy', -5)
+            .style('font-family', 'arial')
+            .style('font-size', '30px')
             .style('font-weight', 'bolder')
         })
         .on("mouseout", d => {
           chartContainer
             .selectAll(".tooltip")
-            // .remove()
+            .remove()
 
           chartContainer
             .selectAll('.data-disc')
             .style("opacity", opacity)
             .style('cursor', 'pointer')
+
+          svg.selectAll(`.legend-text`).style('font-weight', 'normal')
         })
 
       // LEGEND
       let squareSize = 12
-      let legendPadding = (height - (filteredData.length * 20 + 5))/2
+      let legendPadding = (height - (filteredData.length * 20 + 5.5))/2
 
       svg.selectAll('rect')
         .data(filteredData)
@@ -151,7 +228,7 @@
         .append('rect')
         .attr('transform', `translate(${width*legendPositionRatio}, ${legendPadding})`)
         .attr('x', 0)
-        .attr('y', (d,i) => i * 20 + 5)
+        .attr('y', (d,i) => i * 20 + 5.5)
         .attr('width', squareSize)
         .attr('height', squareSize)
         .attr('stroke', 'black')
@@ -159,57 +236,68 @@
         .style('opacity', opacity)
 
       svg.select('#legend')
-          .selectAll('text')
-          .data(filteredData)
-          .enter()
-          .append('text')
-          .attr('transform', `translate(${width * legendPositionRatio + 5}, ${legendPadding})`)
-          .attr('y', (d,i) => 20 * i + 15)
-          .attr('x', squareSize + 5)
-          .text(d => `${d.name} (${d.size}%)`)
-          .style('font-family', 'Arial')
-          .style('font-size', '11px')
+        .selectAll('text')
+        .data(filteredData)
+        .enter()
+        .append('text')
+        .attr('transform', `translate(${width * legendPositionRatio + 5}, ${legendPadding})`)
+        .attr('id', (d,i) => `legend-${i}`)
+        .attr('class', `legend-text`)
+        .attr('y', (d,i) => 20 * i + 15)
+        .attr('x', squareSize + 1)
+        .text(d => `${d.name} (${d.size})`)
+        .style('font-family', 'Arial')
+        .style('font-size', '11px')
+        .on('mouseover', (d, i, paths) => {
+          svg.select(`#data-disc-${i}`).style('opacity', opacityHover)
+          d3.select(paths[i]).style('font-weight', 'bold')
+        })
+        .on('mouseout', (d, i, paths) => {
+          svg.selectAll(`.data-disc`).style('opacity',opacity)
+          d3.select(paths[i]).style('font-weight', 'normal')
+        })
+
+      svg.append('line')
+        .attr('x1', chartXPosition)
+        .attr('x2', chartXPosition)
+        .attr('y1', 0)
+        .attr('y2', '100%')
+        .attr('stroke', 'magenta')
+        .attr('stroke-dasharray', '2')
+
+      svg.append('line')
+        .attr('y1', chartXPosition)
+        .attr('y2', chartXPosition)
+        .attr('x1', 0)
+        .attr('x2', '100%')
+        .attr('stroke', 'magenta')
+        .attr('stroke-dasharray', '2')
+
+      // const labelXPosition = chartXPosition
+      // const labelYPosition = height - 50
+      //
+      // svg.append('text')
+      //   .text('Label test')
+      //   .attr('text-anchor', 'middle')
+      //   .attr('x', labelXPosition)
+      //   .attr('y', labelYPosition)
+      //   .style('font-family', 'Arial')
+      //   .style('font-size', '14px')
+      //
+      // svg.append('text')
+      //   .text('350')
+      //   .attr('text-anchor', 'middle')
+      //   .attr('x', labelXPosition)
+      //   .attr('y', labelYPosition)
+      //   .attr('dy', 20)
+      //   .style('font-family', 'Arial')
+      //   .style('font-size', '20px')
 
       d3.select(`#${containerId}`)
         .append('a')
         .text("Download chart")
         .attr('href', `javascript:void(0)`)
         .attr('onclick', `downloadSVG(document.getElementById('svg_${containerId}'))`)
-
-      // FOR DEBUG
-      // chartContainer
-      //   .append('text')
-      //   .text('TEST')
-      //   .attr('x', chartXPosition)
-      //   .attr('y', chartYPosition)
-      //   .attr('text-anchor', 'middle')
-      // chartContainer
-      //   .append('text')
-      //   .text('123')
-      //   .attr('x', chartXPosition)
-      //   .attr('y', chartYPosition)
-      //   .attr('dy', 30)
-      //   .attr('text-anchor', 'middle')
-
-      // FOR DEBUG
-      svg.append('line')
-        .attr('x1', '0')
-        .attr('x2', '100%')
-        .attr('y1','50%')
-        .attr('y2','50%')
-        .attr('stroke','blue')
-        .attr('stroke-dasharray','4')
-
-      // FOR DEBUG
-      svg.append('line')
-        .attr('y1', '0')
-        .attr('y2', '100%')
-        // .attr('x1',`${legendPositionRatio * 100}%`)
-        // .attr('x2',`${legendPositionRatio * 100}%`)
-        .attr('x1', (width * legendPositionRatio)/2 )
-        .attr('x2', (width * legendPositionRatio)/2 )
-        .attr('stroke','blue')
-        .attr('stroke-dasharray','4')
     }
 
     function downloadSVG(svg){
