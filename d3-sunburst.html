@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      svg {
+        background-color: #eeeeee
+      }
+
+      .tooltip222 {
+        position: absolute;
+        width: 200px;
+        height: auto;
+        padding: 10px;
+        display: none;
+        background-color: white;
+        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+        pointer-events: none;
+      }
+
+      .tooltip222 p {
+        margin: 0;
+        font-family: Arial;
+        font-size: 16px;
+        line-height: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart3"></div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
+          integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
+          crossorigin="anonymous">
+  </script>
+  <script type="text/javascript">
+    const ratingsData = {
+      "name": "Internal Ratings",
+      "color": "#fff",
+      "children": [
+        {
+          "name": "a. Use of Projects and Programs",
+          "size": 1,
+          "color": "#7f7f7f",
+          "children": [
+            {
+              "name": 0,
+              "size": 113
+            },
+            {
+              "name": 1,
+              "size": 1
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 2
+            },
+            {
+              "name": 5,
+              "size": 4
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "b. Use of RFP engine",
+          "size": 1,
+          "color": "#9564bf",
+          "children": [
+            {
+              "name": 0,
+              "size": 111
+            },
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 2,
+              "size": 1
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 4
+            },
+            {
+              "name": 5,
+              "size": 0
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "c. Marketplace/Messaging",
+          "size": 1,
+          "color": "#8d5649",
+          "children": [
+            {
+              "name": 0,
+              "size": 112
+            },
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 2,
+              "size": 2
+            },
+            {
+              "name": 3,
+              "size": 0
+            },
+            {
+              "name": 4,
+              "size": 3
+            },
+            {
+              "name": 5,
+              "size": 0
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "d. Questionnaire",
+          "size": 1,
+          "color": "#7f7f7f",
+          "children": [
+            {
+              "name": 0,
+              "size": 120
+            },
+            {
+              "name": 1,
+              "size": 0
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 0
+            },
+            {
+              "name": 5,
+              "size": 0
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "e. # of sessions",
+          "size": 1,
+          "color": "#e574c3",
+          "children": [
+            {
+              "name": 0,
+              "size": 110
+            },
+            {
+              "name": 1,
+              "size": 2
+            },
+            {
+              "name": 2,
+              "size": 2
+            },
+            {
+              "name": 3,
+              "size": 7
+            },
+            {
+              "name": 4,
+              "size": 0
+            },
+            {
+              "name": 5,
+              "size": 0
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "f. Onboarding",
+          "size": 1,
+          "color": "#8d5649",
+          "children": [
+            {
+              "name": 0,
+              "size": 111
+            },
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 1
+            },
+            {
+              "name": 5,
+              "size": 4
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "g. Frequency of contact with Account Manager",
+          "size": 1,
+          "color": "#bcbf00",
+          "children": [
+            {
+              "name": 0,
+              "size": 112
+            },
+            {
+              "name": 1,
+              "size": 1
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 3
+            },
+            {
+              "name": 5,
+              "size": 4
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "h. Webinar/Event",
+          "size": 1,
+          "color": "#e574c3",
+          "children": [
+            {
+              "name": 0,
+              "size": 118
+            },
+            {
+              "name": 1,
+              "size": 0
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 0
+            },
+            {
+              "name": 5,
+              "size": 2
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "i. Renewal Rate/Duration of subscription",
+          "size": 1,
+          "color": "#1776b6",
+          "children": [
+            {
+              "name": 0,
+              "size": 110
+            },
+            {
+              "name": 1,
+              "size": 0
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 4
+            },
+            {
+              "name": 4,
+              "size": 1
+            },
+            {
+              "name": 5,
+              "size": 6
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "j. Likely to upgrade/use products/services not included in current subscription",
+          "size": 1,
+          "color": "#8d5649",
+          "children": [
+            {
+              "name": 0,
+              "size": 115
+            },
+            {
+              "name": 1,
+              "size": 0
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 0
+            },
+            {
+              "name": 4,
+              "size": 3
+            },
+            {
+              "name": 5,
+              "size": 3
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "k. % of active users (Active defined by logged in the last 3 months)",
+          "size": 1,
+          "color": "#24a121",
+          "children": [
+            {
+              "name": 0,
+              "size": 111
+            },
+            {
+              "name": 1,
+              "size": 2
+            },
+            {
+              "name": 2,
+              "size": 3
+            },
+            {
+              "name": 3,
+              "size": 4
+            },
+            {
+              "name": 4,
+              "size": 0
+            },
+            {
+              "name": 5,
+              "size": 1
+            }
+          ],
+          "enabled": true
+        },
+        {
+          "name": "l. Product Suggestions",
+          "size": 1,
+          "color": "#bcbf00",
+          "children": [
+            {
+              "name": 0,
+              "size": 115
+            },
+            {
+              "name": 1,
+              "size": 0
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 0
+            },
+            {
+              "name": 5,
+              "size": 5
+            }
+          ],
+          "enabled": true
+        }
+      ]
+    }
+
+    sunburst(ratingsData, 'chart3', {width: 325, height: 325})
+
+    function sunburst(data, containerId, options) {
+      const {
+        width = 325,
+        height = 325
+      } = options
+
+      const color = d3.scaleOrdinal(d3.schemeCategory10)
+      const radius = (Math.min(width, height) / 2) - 10
+      const legendRectSize = 15 // defines the size of the colored squares in legend
+      const legendSpacing = 6 // defines spacing between squares
+      const formatNumber = d3.format(",d")
+      // continuous scale. preserves proportional differences
+      const x = d3.scaleLinear().range([0, 2 * Math.PI])
+      // continuous power scale
+      const y = d3.scaleSqrt().range([0, radius])
+      const partition = d3.partition()
+      const arc = d3.arc()
+        .startAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x0))))
+        .endAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
+        .innerRadius(d => Math.max(0, y(d.y0) ))
+        .outerRadius(d => Math.max(0, y(d.y1) ))
+
+      //**********************
+      //        TOOLTIP
+      //**********************
+      let tooltip = d3.select('body')
+        .append('div').classed('tooltip222', true)
+        .append('div').attr('class', 'test')
+        .append('div').attr('class', 'label')
+        .append('div').attr('class', 'count')
+        .append('div').attr('class', 'percent')
+
+      //**********************
+      //        CHART
+      //**********************
+      // prep the data
+      let root = d3.hierarchy(data)
+
+      // calculate total
+      let total = 0
+
+      // must call sum on the hierarchy first
+      // and as we're doing that, total up the sum of the chart
+      root.sum(function(d) {
+        if (d.size) total += (d.children ? 0 : d.size)
+        return d.size
+      })
+
+      // enable data as true true
+      root.data.children.forEach(d => d.enabled = true )
+
+      // define SVG element
+      let svg = d3.select(`#${containerId}`).append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${width / 2},${height / 2})`)
+
+      redraw(root)
+
+      var path = svg.selectAll("path")
+        .data(partition(root).descendants()) // path for each descendant
+        .enter().append("path")
+        .attr("d", arc)
+        .attr("class", "path")
+        // .style("fill", (d,i) => color(i))
+        .style("fill", d => (d.children ? d : d.parent).data.color)
+        .on("click", click)
+        .on('mouseover', d => {
+          //var percent = Math.round(1000 * d.value / total) / 10 // calculate percent
+          // let children_percent = 0
+          //if (d.children) {
+          //  d.children.forEach(element => children_percent += element.data.size)
+          //  percent = Math.round(children_percent / d.children.length)
+          //}
+          tooltip.select('.label')
+            .html(d.children ? d.data.name : `Rate: ${d.data.name}`)
+          tooltip.select('.count')
+            .html(d.children ? `Total count: ${total}` : `Ratings count: ${d.value}`)
+          //tooltip.select('.percent').html(d.children ? ("Average: " + percent + '%'): ("%: " + percent + '%')) // set percent calculated above
+          tooltip.style('display', 'block')
+        })
+        .on('mouseout', () => tooltip.style('display', 'none'))
+        .on('mousemove', () => { // when mouse moves
+          tooltip.style('top', `${ d3.event.layerY + 10 }px`) // always 10px below the cursor
+          tooltip.style('left', `${ d3.event.layerX + 10 }px`) // always 10px to the right of the mouse
+        })
+
+      d3.select(self.frameElement).style("height", `${height}px`)
+
+      //**********************
+      //        LEGEND
+      //**********************
+
+      let legendContainer = d3.select("#legend").append("div").classed("legends clearfix", true)
+
+      let legend = legendContainer.selectAll(".ratings_visualization .legend")
+        .data(root.children)
+        .enter()
+        .append('div') // replace placeholders with g elements
+        .attr('class', 'legend') // each g is given a legend class
+
+      legend.append('div')
+        .classed('rect', true) // append rectangle squares to legend
+        .style('background-color', d => d.data.color)
+        .style('border', '1px solid')
+        .on('click', d => {
+          let rect = d3.select(this) // this refers to the colored squared just clicked
+
+          if (rect.classed('clicked')) {
+            rect.classed('clicked', false).style('background-color', d => d.data.color)
+            d.data.enabled = true
+          } else {
+            rect.classed('clicked', true).style('background-color', 'transparent')
+            d.data.enabled = false
+          }
+
+          let enabledCategory = Object.assign({}, d)
+          enabledCategory = d3.hierarchy(enabledCategory.parent.data)
+
+          enabledCategory.children = []
+
+          d.parent.children.forEach(child => {
+            if (child.data.enabled === true) enabledCategory.children.push(child)
+          })
+
+          enabledCategory.sum(d => {
+            if (d.size) total += (d.children ? 0 : d.size)
+            return d.size
+          })
+
+          redraw(enabledCategory)
+        }) // end legend onclick
+
+      legend.append('span').text(d => d.data.name)
+
+      total2 = total == 0 ? "" : total
+
+      svg.append("text")
+        .attr("class", "total")
+        .attr("text-anchor", "middle")
+        .attr('font-size', '4em')
+        .attr('y', 20)
+        .text(total2)
+
+      //**********************
+      //       FUNCTIONS
+      //**********************
+      function percent(d, total){
+        let percent = Math.round(1000 * d.value / total) / 10
+        return (percent == "Infinity" || percent == 100 || percent == 0) ? '' : `${percent}%`
+      }
+
+      // redraw on disabled category
+      function redraw(d) {
+        svg.transition()
+          .duration(750)
+          .tween("scale", function() {
+            let xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+                yd = d3.interpolate(y.domain(), [d.y0, 1]),
+                yr = d3.interpolate(y.range(), [d.y0 ? (radius / 2) : 0, radius])
+            return function(t) {
+              x.domain(xd(t))
+              y.domain(yd(t)).range(yr(t))
+            }
+          })
+          .selectAll("path")
+          .attrTween("d", function(d) {
+            return function() {
+                return arc(d)
+            }
+          })
+
+        d3.select(".total").text(percent(d, total))
+      }
+
+      // zoom on click
+      function click(d) {
+        svg.transition()
+          .duration(750)
+          .tween("scale", () => {
+            let xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+                yd = d3.interpolate(y.domain(), [d.y0, 1]),
+                yr = d3.interpolate(y.range(), [d.y0 ? 80 : 0, radius])
+            return t => {
+              x.domain(xd(t))
+              y.domain(yd(t)).range(yr(t))
+            }
+          })
+          .selectAll("path")
+          .attrTween("d", d => () => arc(d))
+
+        d3.select(".total").text(percent(d, total))
+      }
+
+      // find ancestors
+      function getRootmostAncestorByWhileLoop(node) {
+        while (node.depth > 1) node = node.parent
+        return node
+      }
+    }
+
+  </script>
+</html>
