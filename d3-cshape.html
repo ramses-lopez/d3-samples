@@ -107,7 +107,7 @@
       let color = d3.scaleOrdinal(d3.schemeCategory10)
       let filteredData = data.map(d => { return { name: d.name, size: parseInt(d.size)} })
                           .filter(d => d.size > 0)
-                          .sort((a,b) => a.size < b.size)
+                          .sort((a,b) => a.size < b.size ? 1 : -1)
       // max angle will be 90% to create a gap
       // const topValue = Math.max(...data.map( x => parseInt(x.size)))
       // const topValue = filteredData.map(x => x.size).reduce( (a, x) => x + a, 0)
