@@ -31,6 +31,7 @@
   </head>
   <body>
     <div id="chart3"></div>
+    <div id="legend" class="legend"></div>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
           integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
@@ -39,12 +40,10 @@
   <script type="text/javascript">
     const ratingsData = {
       "name": "Internal Ratings",
-      "color": "#fff",
       "children": [
         {
           "name": "a. Use of Projects and Programs",
-          "size": 1,
-          "color": "#7f7f7f",
+          "color": "pink",
           "children": [
             {
               "name": 0,
@@ -71,11 +70,10 @@
               "size": 4
             }
           ],
-          "enabled": true
+          "enabled": false
         },
         {
           "name": "b. Use of RFP engine",
-          "size": 1,
           "color": "#9564bf",
           "children": [
             {
@@ -107,8 +105,6 @@
         },
         {
           "name": "c. Marketplace/Messaging",
-          "size": 1,
-          "color": "#8d5649",
           "children": [
             {
               "name": 0,
@@ -171,8 +167,6 @@
         },
         {
           "name": "e. # of sessions",
-          "size": 1,
-          "color": "#e574c3",
           "children": [
             {
               "name": 0,
@@ -203,8 +197,6 @@
         },
         {
           "name": "f. Onboarding",
-          "size": 1,
-          "color": "#8d5649",
           "children": [
             {
               "name": 0,
@@ -235,8 +227,6 @@
         },
         {
           "name": "g. Frequency of contact with Account Manager",
-          "size": 1,
-          "color": "#bcbf00",
           "children": [
             {
               "name": 0,
@@ -267,8 +257,6 @@
         },
         {
           "name": "h. Webinar/Event",
-          "size": 1,
-          "color": "#e574c3",
           "children": [
             {
               "name": 0,
@@ -299,8 +287,6 @@
         },
         {
           "name": "i. Renewal Rate/Duration of subscription",
-          "size": 1,
-          "color": "#1776b6",
           "children": [
             {
               "name": 0,
@@ -327,12 +313,9 @@
               "size": 6
             }
           ],
-          "enabled": true
         },
         {
           "name": "j. Likely to upgrade/use products/services not included in current subscription",
-          "size": 1,
-          "color": "#8d5649",
           "children": [
             {
               "name": 0,
@@ -359,12 +342,9 @@
               "size": 3
             }
           ],
-          "enabled": true
         },
         {
           "name": "k. % of active users (Active defined by logged in the last 3 months)",
-          "size": 1,
-          "color": "#24a121",
           "children": [
             {
               "name": 0,
@@ -391,12 +371,9 @@
               "size": 1
             }
           ],
-          "enabled": true
         },
         {
           "name": "l. Product Suggestions",
-          "size": 1,
-          "color": "#bcbf00",
           "children": [
             {
               "name": 0,
@@ -423,12 +400,133 @@
               "size": 5
             }
           ],
-          "enabled": true
         }
       ]
     }
 
-    sunburst(ratingsData, 'chart3', {width: 325, height: 325})
+    const sampleData = {
+      "name": "Internal Ratings",
+      "children": [
+        {
+          "name": "a. Use of Projects and Programs",
+          "children": [
+            {
+              "name": 0,
+              "size": 113
+            },
+            {
+              "name": 1,
+              "size": 1
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 2
+            },
+            {
+              "name": 5,
+              "size": 4
+            }
+          ],
+        },
+        {
+          "name": "b. Use of RFP engine",
+          "children": [
+            {
+              "name": 0,
+              "size": 111
+            },
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 2,
+              "size": 1
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 4
+            },
+            {
+              "name": 5,
+              "size": 0
+            }
+          ],
+        },
+        {
+          "name": "c. Marketplace/Messaging",
+          "children": [
+            {
+              "name": 0,
+              "size": 112
+            },
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 2,
+              "size": 2
+            },
+            {
+              "name": 3,
+              "size": 0
+            },
+            {
+              "name": 4,
+              "size": 3
+            },
+            {
+              "name": 5,
+              "size": 0
+            }
+          ],
+        },
+        {
+          "name": "d. Questionnaire",
+          "children": [
+            {
+              "name": 0,
+              "size": 120
+            },
+            {
+              "name": 1,
+              "size": 0
+            },
+            {
+              "name": 2,
+              "size": 0
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 0
+            },
+            {
+              "name": 5,
+              "size": 0
+            }
+          ],
+        }
+      ]
+    }
+
+    sunburst(ratingsData, 'chart3', {width: 700, height: 700})
 
     function sunburst(data, containerId, options) {
       const {
@@ -436,11 +534,23 @@
         height = 325
       } = options
 
-      const color = d3.scaleOrdinal(d3.schemeCategory10)
+      // https://observablehq.com/@d3/color-schemes
+      let colorArray = ["#6e40aa",
+                        "#bf3caf",
+                        "#fe4b83",
+                        "#ff7847",
+                        "#e2b72f",
+                        "#aff05b",
+                        "#52f667",
+                        "#1ddfa3",
+                        "#23abd8",
+                        "#4c6edb",
+                        "#6e40aa"]
+
+      const color = d3.scaleOrdinal().domain([0, data.children.length]).range(colorArray)
       const radius = (Math.min(width, height) / 2) - 10
-      const legendRectSize = 15 // defines the size of the colored squares in legend
-      const legendSpacing = 6 // defines spacing between squares
-      const formatNumber = d3.format(",d")
+      const legendRectSize = 15
+      const legendSpacing = 6
       // continuous scale. preserves proportional differences
       const x = d3.scaleLinear().range([0, 2 * Math.PI])
       // continuous power scale
@@ -448,74 +558,82 @@
       const partition = d3.partition()
       const arc = d3.arc()
         .startAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x0))))
-        .endAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
-        .innerRadius(d => Math.max(0, y(d.y0) ))
-        .outerRadius(d => Math.max(0, y(d.y1) ))
+        .endAngle( d => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
+        .innerRadius(d => y(d.y0))
+        .outerRadius(d => y(d.y1))
 
       //**********************
       //        TOOLTIP
       //**********************
-      let tooltip = d3.select('body')
-        .append('div').classed('tooltip222', true)
-        .append('div').attr('class', 'test')
-        .append('div').attr('class', 'label')
-        .append('div').attr('class', 'count')
-        .append('div').attr('class', 'percent')
+      let tooltip = d3.select('body').append('div').classed('tooltip222', true)
+      tooltip.append('div').attr('class', 'label')
 
       //**********************
       //        CHART
       //**********************
-      // prep the data
-      let root = d3.hierarchy(data)
+      const root = d3.hierarchy(data)
+      const childrenCount =
+        data.children.length +
+        data.children.reduce((a,x) => a + x.children.length, 0)
 
-      // calculate total
-      let total = 0
+      const colorScale = d3.scaleLinear().domain([0, 5]).range([0.3, 0.9])
 
       // must call sum on the hierarchy first
-      // and as we're doing that, total up the sum of the chart
-      root.sum(function(d) {
-        if (d.size) total += (d.children ? 0 : d.size)
-        return d.size
-      })
+      root.sum(d => d.size)
 
-      // enable data as true true
-      root.data.children.forEach(d => d.enabled = true )
+      const total = root.value
+
+      root.data.children.forEach(d => d.enabled = true)
+
+      console.log(root);
 
       // define SVG element
-      let svg = d3.select(`#${containerId}`).append("svg")
+      let svg = d3.select(`#${containerId}`)
+        .append("svg")
         .attr("width", width)
         .attr("height", height)
+        .attr('font-family', 'Arial')
         .append("g")
-        .attr("transform", `translate(${width / 2},${height / 2})`)
+        .attr("transform", `translate(${width / 2}, ${height / 2})`)
 
-      redraw(root)
-
-      var path = svg.selectAll("path")
-        .data(partition(root).descendants()) // path for each descendant
-        .enter().append("path")
+      svg.selectAll("path")
+        .data(partition(root).descendants())
+        .enter()
+        .append("path")
         .attr("d", arc)
         .attr("class", "path")
-        // .style("fill", (d,i) => color(i))
-        .style("fill", d => (d.children ? d : d.parent).data.color)
+        .attr("stroke", "#fff")
+        .attr("stroke-width", "0.5px")
+        .style("fill", (d,i, paths) => {
+          let fillColor = null
+          // check if it's the middle layer
+          if(d.parent && d.children) {
+            fillColor = color(i)
+            d.color = fillColor
+          }
+          else if(!d.children) {
+            fillColor = d.parent.color
+            let opacity = colorScale(parseInt(d.data.name))
+            d3.select(paths[i]).style('opacity', opacity)
+          }
+          else {
+            fillColor = 'transparent'
+          }
+          return fillColor
+        })
         .on("click", click)
         .on('mouseover', d => {
-          //var percent = Math.round(1000 * d.value / total) / 10 // calculate percent
-          // let children_percent = 0
-          //if (d.children) {
-          //  d.children.forEach(element => children_percent += element.data.size)
-          //  percent = Math.round(children_percent / d.children.length)
-          //}
+          console.log('parent',d.parent.value);
+          console.log('value',d.value);
+          console.log('children',d.children);
           tooltip.select('.label')
-            .html(d.children ? d.data.name : `Rate: ${d.data.name}`)
-          tooltip.select('.count')
-            .html(d.children ? `Total count: ${total}` : `Ratings count: ${d.value}`)
-          //tooltip.select('.percent').html(d.children ? ("Average: " + percent + '%'): ("%: " + percent + '%')) // set percent calculated above
+            .html(d.children ? `${d.data.name} (${d.value})` : `Rated ${d.data.name} (${d.value})`)
           tooltip.style('display', 'block')
         })
         .on('mouseout', () => tooltip.style('display', 'none'))
-        .on('mousemove', () => { // when mouse moves
-          tooltip.style('top', `${ d3.event.layerY + 10 }px`) // always 10px below the cursor
-          tooltip.style('left', `${ d3.event.layerX + 10 }px`) // always 10px to the right of the mouse
+        .on('mousemove', () => {
+          tooltip.style('top', `${ d3.event.layerY + 10 }px`)
+          tooltip.style('left', `${ d3.event.layerX + 10 }px`)
         })
 
       d3.select(self.frameElement).style("height", `${height}px`)
@@ -524,9 +642,10 @@
       //        LEGEND
       //**********************
 
+      // TODO: replace with SVG-Generated legend
       let legendContainer = d3.select("#legend").append("div").classed("legends clearfix", true)
 
-      let legend = legendContainer.selectAll(".ratings_visualization .legend")
+      let legend = legendContainer.selectAll(".legend")
         .data(root.children)
         .enter()
         .append('div') // replace placeholders with g elements
@@ -566,48 +685,25 @@
 
       legend.append('span').text(d => d.data.name)
 
-      total2 = total == 0 ? "" : total
-
       svg.append("text")
         .attr("class", "total")
         .attr("text-anchor", "middle")
-        .attr('font-size', '4em')
+        .attr('font-size', '2em')
         .attr('y', 20)
-        .text(total2)
+        .text(data.name)
 
       //**********************
       //       FUNCTIONS
       //**********************
-      function percent(d, total){
-        let percent = Math.round(1000 * d.value / total) / 10
-        return (percent == "Infinity" || percent == 100 || percent == 0) ? '' : `${percent}%`
-      }
-
-      // redraw on disabled category
-      function redraw(d) {
-        svg.transition()
-          .duration(750)
-          .tween("scale", function() {
-            let xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
-                yd = d3.interpolate(y.domain(), [d.y0, 1]),
-                yr = d3.interpolate(y.range(), [d.y0 ? (radius / 2) : 0, radius])
-            return function(t) {
-              x.domain(xd(t))
-              y.domain(yd(t)).range(yr(t))
-            }
-          })
-          .selectAll("path")
-          .attrTween("d", function(d) {
-            return function() {
-                return arc(d)
-            }
-          })
-
-        d3.select(".total").text(percent(d, total))
+      function percent(size, total){
+        let percent = (100 * (size / total))
+        return (percent == "Infinity" || percent == 0) ? '' : `${percent.toFixed(2)}%`
       }
 
       // zoom on click
       function click(d) {
+        if(!d.data.children) return false
+
         svg.transition()
           .duration(750)
           .tween("scale", () => {
@@ -621,14 +717,7 @@
           })
           .selectAll("path")
           .attrTween("d", d => () => arc(d))
-
-        d3.select(".total").text(percent(d, total))
-      }
-
-      // find ancestors
-      function getRootmostAncestorByWhileLoop(node) {
-        while (node.depth > 1) node = node.parent
-        return node
+        d3.select(".total").text(`${d.data.name}\n${percent(d.value, total)}`)
       }
     }
 
