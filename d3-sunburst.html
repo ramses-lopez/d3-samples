@@ -7,26 +7,6 @@
       svg {
         background-color: #eeeeee
       }
-
-      .tooltip222 {
-        position: absolute;
-        width: 200px;
-        height: auto;
-        padding: 10px;
-        display: none;
-        background-color: white;
-        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-        pointer-events: none;
-      }
-
-      .tooltip222 p {
-        margin: 0;
-        font-family: Arial;
-        font-size: 16px;
-        line-height: 20px;
-      }
     </style>
   </head>
   <body>
@@ -524,14 +504,15 @@
       ]
     }
 
-    sunburst(ratingsData, 'chart', {width: 500, height: 500})
+    sunburst(ratingsData, 'chart', {width: 700, height: 400})
 
     function sunburst(data, containerId, options) {
       const {
         width = 325,
         height = 325,
         legendPositionRatio = 0.60,
-        placeholderLabel = 'Organization Ratings'
+        placeholderLabel = 'Organization Ratings',
+        showLegend = true
       } = options
 
       const chartContainerWidth = width * legendPositionRatio
@@ -573,8 +554,6 @@
       // sum must be called on the hierarchy first to set values
       root.sum(d => d.size)
 
-      root.data.children.forEach(d => d.enabled = true)
-
       let svg = d3.select(`#${containerId}`)
         .append("svg")
         .attr("width", width)
@@ -593,14 +572,15 @@
                                 .attr('height', '100%')
 
       const labelContainer = svg.append('g')
-      const labelXPosition = width / 2
-      const labelYPosition = height - 50
+      const labelXPosition = chartContainerWidth / 2
+      const labelYPosition = chartContainerHeight / 2
 
       labelContainer.append('text')
         .text(placeholderLabel)
         .attr('text-anchor', 'middle')
         .attr('x', labelXPosition)
         .attr('y', labelYPosition)
+        .attr('dy', 5)
         .style('font-size', '20px')
 
       chartContainer.selectAll("path")
@@ -611,17 +591,16 @@
         .attr("class", "path")
         .attr("stroke", "#fff")
         .attr("stroke-width", "0.5px")
-        .style("fill", (d,i, paths) => {
+        .style("fill", (d, i, paths) => {
           let fillColor = null
-          // check if it's the middle layer
+
           if(d.parent && d.children) {
             fillColor = color(i)
             d.color = fillColor
           }
           else if(!d.children) {
             fillColor = d.parent.color
-            let opacity = colorScale(parseInt(d.data.name))
-            d3.select(paths[i]).style('opacity', opacity)
+            d3.select(paths[i]).style('opacity', colorScale(parseInt(d.data.name)))
           }
           else {
             fillColor = 'transparent'
@@ -668,6 +647,7 @@
             .attr('text-anchor', 'middle')
             .attr('x', labelXPosition)
             .attr('y', labelYPosition)
+            .attr('dy', 5)
             .style('font-size', '20px')
         })
 
