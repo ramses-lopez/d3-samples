@@ -30,8 +30,7 @@
     </style>
   </head>
   <body>
-    <div id="chart3"></div>
-    <div id="legend" class="legend"></div>
+    <div id="chart"></div>
   </body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
           integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
@@ -135,7 +134,6 @@
         },
         {
           "name": "d. Questionnaire",
-          "size": 1,
           "color": "#7f7f7f",
           "children": [
             {
@@ -526,16 +524,21 @@
       ]
     }
 
-    sunburst(ratingsData, 'chart3', {width: 700, height: 700})
+    sunburst(ratingsData, 'chart', {width: 500, height: 500})
 
     function sunburst(data, containerId, options) {
       const {
         width = 325,
-        height = 325
+        height = 325,
+        legendPositionRatio = 0.60,
+        placeholderLabel = 'Organization Ratings'
       } = options
 
+      const chartContainerWidth = width * legendPositionRatio
+      const chartContainerHeight = height
+
       // https://observablehq.com/@d3/color-schemes
-      let colorArray = ["#6e40aa",
+      const colorArray = ["#6e40aa",
                         "#bf3caf",
                         "#fe4b83",
                         "#ff7847",
@@ -548,9 +551,8 @@
                         "#6e40aa"]
 
       const color = d3.scaleOrdinal().domain([0, data.children.length]).range(colorArray)
-      const radius = (Math.min(width, height) / 2) - 10
-      const legendRectSize = 15
-      const legendSpacing = 6
+      const radius = Math.min(chartContainerHeight, chartContainerWidth) / 2 - 10
+
       // continuous scale. preserves proportional differences
       const x = d3.scaleLinear().range([0, 2 * Math.PI])
       // continuous power scale
@@ -562,41 +564,46 @@
         .innerRadius(d => y(d.y0))
         .outerRadius(d => y(d.y1))
 
-      //**********************
-      //        TOOLTIP
-      //**********************
-      let tooltip = d3.select('body').append('div').classed('tooltip222', true)
-      tooltip.append('div').attr('class', 'label')
-
-      //**********************
-      //        CHART
-      //**********************
+      // CHART
       const root = d3.hierarchy(data)
-      const childrenCount =
-        data.children.length +
-        data.children.reduce((a,x) => a + x.children.length, 0)
-
+      const childrenCount = data.children.length +
+                            data.children.reduce((a,x) => a + x.children.length, 0)
       const colorScale = d3.scaleLinear().domain([0, 5]).range([0.3, 0.9])
 
-      // must call sum on the hierarchy first
+      // sum must be called on the hierarchy first to set values
       root.sum(d => d.size)
-
-      const total = root.value
 
       root.data.children.forEach(d => d.enabled = true)
 
-      console.log(root);
-
-      // define SVG element
       let svg = d3.select(`#${containerId}`)
         .append("svg")
         .attr("width", width)
         .attr("height", height)
         .attr('font-family', 'Arial')
-        .append("g")
-        .attr("transform", `translate(${width / 2}, ${height / 2})`)
 
-      svg.selectAll("path")
+      const chartContainer =
+        svg.append('g')
+          .attr('id', 'chart-container')
+          .attr('width', chartContainerWidth)
+          .attr("transform", `translate(${chartContainerWidth/2}, ${chartContainerHeight/2})`)
+
+      const legendContainer = svg.append('g')
+                                .attr('id', 'legend-container')
+                                .attr('width', width - chartContainerWidth)
+                                .attr('height', '100%')
+
+      const labelContainer = svg.append('g')
+      const labelXPosition = width / 2
+      const labelYPosition = height - 50
+
+      labelContainer.append('text')
+        .text(placeholderLabel)
+        .attr('text-anchor', 'middle')
+        .attr('x', labelXPosition)
+        .attr('y', labelYPosition)
+        .style('font-size', '20px')
+
+      chartContainer.selectAll("path")
         .data(partition(root).descendants())
         .enter()
         .append("path")
@@ -621,105 +628,75 @@
           }
           return fillColor
         })
-        .on("click", click)
+        .on("click", d => {
+          svg.transition()
+            .duration(750)
+            .tween("scale", () => {
+              let xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+                  yd = d3.interpolate(y.domain(), [d.y0, 1]),
+                  yr = d3.interpolate(y.range(),  [d.y0 ? 80 : 0, radius])
+              return t => {
+                x.domain(xd(t))
+                y.domain(yd(t)).range(yr(t))
+              }
+            })
+            .selectAll("path")
+            .attrTween("d", d => () => arc(d))
+        })
         .on('mouseover', d => {
-          console.log('parent',d.parent.value);
-          console.log('value',d.value);
-          console.log('children',d.children);
-          tooltip.select('.label')
-            .html(d.children ? `${d.data.name} (${d.value})` : `Rated ${d.data.name} (${d.value})`)
-          tooltip.style('display', 'block')
+          labelContainer.selectAll('text').remove()
+
+          labelContainer.append('text')
+            .text(d.children ? d.data.name : `Rated ${d.data.name}` )
+            .attr('text-anchor', 'middle')
+            .attr('x', labelXPosition)
+            .attr('y', labelYPosition)
+            .style('font-size', '14px')
+
+          labelContainer.append('text')
+            .text(`${d.value} organizations`)
+            .attr('text-anchor', 'middle')
+            .attr('x', labelXPosition)
+            .attr('y', labelYPosition)
+            .attr('dy', 20)
+            .style('font-size', '20px')
         })
-        .on('mouseout', () => tooltip.style('display', 'none'))
-        .on('mousemove', () => {
-          tooltip.style('top', `${ d3.event.layerY + 10 }px`)
-          tooltip.style('left', `${ d3.event.layerX + 10 }px`)
+        .on('mouseout', () => {
+          labelContainer.selectAll('text').remove()
+          labelContainer.append('text')
+            .text(placeholderLabel)
+            .attr('text-anchor', 'middle')
+            .attr('x', labelXPosition)
+            .attr('y', labelYPosition)
+            .style('font-size', '20px')
         })
 
-      d3.select(self.frameElement).style("height", `${height}px`)
+      // LEGEND
+      let squareSize = 11
+      let legendPadding = (height - (root.children.length * 20 + 5.5))/2
 
-      //**********************
-      //        LEGEND
-      //**********************
-
-      // TODO: replace with SVG-Generated legend
-      let legendContainer = d3.select("#legend").append("div").classed("legends clearfix", true)
-
-      let legend = legendContainer.selectAll(".legend")
+      legendContainer.selectAll('rect')
         .data(root.children)
         .enter()
-        .append('div') // replace placeholders with g elements
-        .attr('class', 'legend') // each g is given a legend class
+        .append('rect')
+        .attr('transform', `translate(${width*legendPositionRatio}, ${legendPadding})`)
+        .attr('x', 0)
+        .attr('y', (d,i) => i * 20 + 5.5)
+        .attr('width', squareSize)
+        .attr('height', squareSize)
+        .attr('stroke', 'black')
+        .attr('fill', (d, i) => color(i))
 
-      legend.append('div')
-        .classed('rect', true) // append rectangle squares to legend
-        .style('background-color', d => d.data.color)
-        .style('border', '1px solid')
-        .on('click', d => {
-          let rect = d3.select(this) // this refers to the colored squared just clicked
-
-          if (rect.classed('clicked')) {
-            rect.classed('clicked', false).style('background-color', d => d.data.color)
-            d.data.enabled = true
-          } else {
-            rect.classed('clicked', true).style('background-color', 'transparent')
-            d.data.enabled = false
-          }
-
-          let enabledCategory = Object.assign({}, d)
-          enabledCategory = d3.hierarchy(enabledCategory.parent.data)
-
-          enabledCategory.children = []
-
-          d.parent.children.forEach(child => {
-            if (child.data.enabled === true) enabledCategory.children.push(child)
-          })
-
-          enabledCategory.sum(d => {
-            if (d.size) total += (d.children ? 0 : d.size)
-            return d.size
-          })
-
-          redraw(enabledCategory)
-        }) // end legend onclick
-
-      legend.append('span').text(d => d.data.name)
-
-      svg.append("text")
-        .attr("class", "total")
-        .attr("text-anchor", "middle")
-        .attr('font-size', '2em')
-        .attr('y', 20)
-        .text(data.name)
-
-      //**********************
-      //       FUNCTIONS
-      //**********************
-      function percent(size, total){
-        let percent = (100 * (size / total))
-        return (percent == "Infinity" || percent == 0) ? '' : `${percent.toFixed(2)}%`
-      }
-
-      // zoom on click
-      function click(d) {
-        if(!d.data.children) return false
-
-        svg.transition()
-          .duration(750)
-          .tween("scale", () => {
-            let xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
-                yd = d3.interpolate(y.domain(), [d.y0, 1]),
-                yr = d3.interpolate(y.range(), [d.y0 ? 80 : 0, radius])
-            return t => {
-              x.domain(xd(t))
-              y.domain(yd(t)).range(yr(t))
-            }
-          })
-          .selectAll("path")
-          .attrTween("d", d => () => arc(d))
-        d3.select(".total").text(`${d.data.name}\n${percent(d.value, total)}`)
-      }
+      svg.select('#legend-container')
+        .selectAll('text')
+        .data(root.children)
+        .enter()
+        .append('text')
+        .attr('transform', `translate(${chartContainerWidth + 5}, ${legendPadding})`)
+        .attr('y', (d,i) => 20 * i + 15)
+        .attr('x', squareSize + 2)
+        .text(d => d.data.name)
+        .style('font-size', `${ squareSize }px`)
     }
-
   </script>
 </html>
