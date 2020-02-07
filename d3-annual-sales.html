@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      svg {
+        background-color: #eeeeee
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
+          integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
+          crossorigin="anonymous">
+  </script>
+  <script type="text/javascript">
+
+    const sampleData = [{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 20659235 }, { "name": "Singapore", "value": 17000000 }, { "name": "Turkey", "value": 10000000 }, { "name": "United States", "value": 5001003 }, { "name": "Belgium", "value": 3400393 }, { "name": "France", "value": 1050000 }, { "name": "Spain", "value": 396169 }, { "name": "Italy", "value": 18025 }, { "name": "India", "value": 1000 }, { "name": "United     Kingdom", "value": 3 }, { "name": "Korea, Republic of", "value": 0 }, { "name": "Norway", "value": 0 }, { "name": "Australia", "value": 0 }, { "name": "Saudi Arabia", "value": 0 }, { "name": "Ghana", "value": 0 }, {"name": "Venezuela", "value": 100000000}]
+
+    pieBar(sampleData.filter(x => x.value > 0), 'chart', {width: 800, height: 500} )
+
+    function pieBar(data, containerId, options){
+      const { width = 325, height = 325, legendPositionRatio = 0.60 } = options
+
+      const chartContainerWidth = width * legendPositionRatio
+      const chartContainerHeight = height
+      const colorArray = ["#6e40aa", "#bf3caf", "#fe4b83", "#ff7847", "#e2b72f", "#aff05b", "#52f667", "#1ddfa3", "#23abd8", "#4c6edb", "#6e40aa"]
+      const topValue = data.reduce((a, x) => x.value < a ? a : x.value, 0)
+      const minValue = data.reduce((a, x) => x.value > a ? a : x.value, 0)
+      const numberScale = d3.scaleLinear().domain([0, topValue]).range([5, 100])
+      const colorScale = d3
+        .scaleSequential()
+        .domain([0, data.length - 1])
+        .interpolator(d3.interpolatePlasma)
+
+      // para la linea
+      // var linearScale = d3.scaleLinear()
+      // 	.domain([0, 100])
+      // 	.range([0, 600]);
+      //
+      // var sequentialScale = d3.scaleSequential()
+      // 	.domain([0, 100])
+      // 	.interpolator(d3.interpolateRainbow);
+      //
+      // var myData = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+      //
+      // d3.select('#wrapper')
+      // 	.selectAll('circle')
+      // 	.data(myData)
+      // 	.enter()
+      // 	.append('circle')
+      // 	.attr('r', 10)
+      // 	.attr('cx', function(d) {
+      // 		return linearScale(d);
+      // 	})
+      // 	.style('fill', function(d) {
+      // 		return sequentialScale(d);
+      // 	});
+
+      let svg = d3.select(`#${containerId}`)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr('font-family', 'Arial')
+
+      const chartContainer =
+        svg.append('g')
+          .attr('id', 'chart-container')
+          .attr('width', chartContainerWidth)
+          // TODO update this
+          .attr("transform", `translate(25, ${chartContainerHeight/2})`)
+
+      const legendContainer = svg.append('g')
+                                .attr('id', 'legend-container')
+                                .attr('width', width - chartContainerWidth)
+                                .attr('height', chartContainerHeight)
+
+      const step = chartContainerWidth / (data.length - 1)
+
+      chartContainer.append('line')
+        .attr('x1', 0)
+        .attr('x2', chartContainerWidth)
+        .attr('stroke', '#000000')
+
+      chartContainer
+        .selectAll('.country-point')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class','country-point')
+        .attr('r', 2)
+        .attr('cx', (d, i) => i * step)
+
+      chartContainer
+        .selectAll('.country-bubble')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('class', d => `country-bubble`)
+        .attr('r', d => numberScale(d.value))
+        .attr('cx', (d, i) => i * step)
+        .attr('fill', (d, i) => {
+          console.log(i, colorScale(i));
+          return colorScale(i)
+        })
+        .attr('opacity', 0.7)
+
+      chartContainer
+        .selectAll('.country-line')
+        .data(data)
+        .enter()
+        .append('line')
+        .attr('class','country-line')
+        .attr('x1', (d, i) => i * step)
+        .attr('y1', (d, i) => 0)
+        .attr('x2', (d, i) => i * step)
+        .attr('y2', (d, i) => 20)
+        .attr('stroke', 'black')
+
+      chartContainer
+        .selectAll('.country-label')
+        .data(data)
+        .enter()
+        .append('text')
+        .text(d => `${d.name}`)
+        .attr('text-anchor','end')
+        .attr('class','country-label')
+        .attr('dy', 5)
+        .attr('transform', (d,i) => `translate(${i * step}, 25) rotate(315)`)
+        .attr('stroke', 'black')
+        .style('font-size', '12px')
+
+    }
+  </script>
+</html>
