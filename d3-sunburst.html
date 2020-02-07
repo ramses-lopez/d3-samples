@@ -588,6 +588,7 @@
         .enter()
         .append("path")
         .attr("d", arc)
+        .attr("id", (d, i) => `path-${i}`)
         .attr("class", "path")
         .attr("stroke", "#fff")
         .attr("stroke-width", "0.5px")
@@ -625,8 +626,10 @@
         .on('mouseover', d => {
           labelContainer.selectAll('text').remove()
 
+          const name = d.data.name
+
           labelContainer.append('text')
-            .text(d.children ? d.data.name : `Rated ${d.data.name}` )
+            .text(d.children ? name : `Rated ${name}` )
             .attr('text-anchor', 'middle')
             .attr('x', labelXPosition)
             .attr('y', labelYPosition)
@@ -665,7 +668,10 @@
         .attr('width', squareSize)
         .attr('height', squareSize)
         .attr('stroke', 'black')
-        .attr('fill', (d, i) => color(i))
+        .attr('fill', (d,i) => {
+          let path = chartContainer.select(`#path-${i + 1}`)
+          return path.data()[0].color
+        })
 
       svg.select('#legend-container')
         .selectAll('text')
