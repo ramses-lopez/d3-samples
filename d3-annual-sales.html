@@ -71,6 +71,14 @@
         .attr('cx', (d, i) => linearScale(i))
         .attr('fill', (d, i) => colorScale(i))
         .attr('opacity', bubbleOpacity)
+        .on('mouseover', (d, i, paths) => {
+          svg.select(`#country-bubble-${i}, #legend-rect-${i}`).style('opacity', 1)
+          svg.select(`#legend-text-${i}`).style('font-weight', 'bold')
+        })
+        .on('mouseout', (d, i, paths) => {
+          svg.selectAll(`.country-bubble, .legend-rect`).style('opacity', bubbleOpacity)
+          svg.select(`#legend-text-${i}`).style('font-weight', 'normal')
+        })
 
       const legendPadding = (height - (data.length * 20 + 5.5))/2
       const legendContainer =
