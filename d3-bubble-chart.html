@@ -22,9 +22,9 @@
 
     const newData = [{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 }, { "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },]
 
-    pieBar(sampleData.filter(x => x.value > 0), 'chart', {width: 500, height: 400} )
+    bubbleChart(sampleData.filter(x => x.value > 0), 'chart', {width: 500, height: 400} )
 
-    function pieBar(data, containerId, options){
+    function bubbleChart(data, containerId, options){
       const { width = 500,
         height = 400,
         maxRadius = 35,
