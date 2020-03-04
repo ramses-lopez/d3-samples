@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      svg {
+        background-color: #eeeeee
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
+          integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
+          crossorigin="anonymous">
+  </script>
+  <script type="text/javascript">
+    const ratingsData = {
+      "name": "",
+      "companies_rated": 12,
+      "children": [
+        {
+          "name": "a. Use of Projects and Programs",
+          "children": [
+            {
+              "name": 1,
+              "size": 1
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 2
+            },
+            {
+              "name": 5,
+              "size": 5
+            }
+          ]
+        },
+        {
+          "name": "b. Use of RFP engine",
+          "children": [
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 2,
+              "size": 1
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 4
+            },
+            {
+              "name": 5,
+              "size": 1
+            }
+          ]
+        },
+        {
+          "name": "c. Marketplace/Messaging",
+          "children": [
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 2,
+              "size": 2
+            },
+            {
+              "name": 4,
+              "size": 3
+            },
+            {
+              "name": 5,
+              "size": 1
+            }
+          ]
+        },
+        {
+          "name": "d. Questionnaire",
+          "children": [
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 5,
+              "size": 1
+            }
+          ]
+        },
+        {
+          "name": "e. # of sessions",
+          "children": [
+            {
+              "name": 1,
+              "size": 2
+            },
+            {
+              "name": 2,
+              "size": 2
+            },
+            {
+              "name": 3,
+              "size": 7
+            },
+            {
+              "name": 5,
+              "size": 1
+            }
+          ]
+        },
+        {
+          "name": "f. Onboarding",
+          "children": [
+            {
+              "name": 1,
+              "size": 4
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 1
+            },
+            {
+              "name": 5,
+              "size": 5
+            }
+          ]
+        },
+        {
+          "name": "g. Frequency of contact with Account Manager",
+          "children": [
+            {
+              "name": 1,
+              "size": 1
+            },
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 4,
+              "size": 3
+            },
+            {
+              "name": 5,
+              "size": 5
+            }
+          ]
+        },
+        {
+          "name": "h. Webinar/Event",
+          "children": [
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 5,
+              "size": 3
+            }
+          ]
+        },
+        {
+          "name": "i. Renewal Rate/Duration of subscription",
+          "children": [
+            {
+              "name": 3,
+              "size": 4
+            },
+            {
+              "name": 4,
+              "size": 1
+            },
+            {
+              "name": 5,
+              "size": 7
+            }
+          ]
+        },
+        {
+          "name": "j. Likely to upgrade/use products/services not included in current subscription",
+          "children": [
+            {
+              "name": 4,
+              "size": 3
+            },
+            {
+              "name": 5,
+              "size": 4
+            }
+          ]
+        },
+        {
+          "name": "k. % of active users (Active defined by logged in the last 3 months)",
+          "children": [
+            {
+              "name": 1,
+              "size": 2
+            },
+            {
+              "name": 2,
+              "size": 3
+            },
+            {
+              "name": 3,
+              "size": 4
+            },
+            {
+              "name": 5,
+              "size": 2
+            }
+          ]
+        },
+        {
+          "name": "l. Product Suggestions",
+          "children": [
+            {
+              "name": 3,
+              "size": 1
+            },
+            {
+              "name": 5,
+              "size": 5
+            }
+          ]
+        }
+      ]
+    }
+
+    const af = {
+      "name": "",
+      "companies_rated": 2,
+      "children": [
+        {
+          "name": "a. Use of Projects and Programs",
+          "children": [
+            {
+              "name": 5,
+              "size": 1
+            },
+            {
+              "name": 1,
+              "size": 1
+            }
+          ]
+        },
+        {
+          "name": "b. Use of RFP engine",
+          "children": [
+            {
+              "name": 5,
+              "size": 1
+            }
+          ]
+        }
+      ]
+    }
+
+    ratings(ratingsData, "chart", { width: 400, height: 600 })
+
+    function ratings(data, containerId, options) {
+
+      const {
+        width = 600,
+        height = 600,
+        chartWidth = 300,
+        chartHeight = height,
+        chartPadding = 10,
+        placeholderLabel = 'Internal Ratings',
+        showLegend = true,
+        maxLabelSize = 50
+      } = options
+
+      const totalCompanies = data.companies_rated
+
+      const svg = d3.select(`#${containerId}`)
+        .append("svg")
+        .attr("id", containerId)
+        .attr("width", width)
+        .attr("height", height)
+        .attr('font-family', 'Arial')
+
+      if(data === null){
+        appendNoDataMessage(svg, 'No ratings to display')
+        return
+      }
+
+      const chartContainerWidth = chartWidth
+      const chartContainerHeight = chartHeight
+      const color = d3.scaleSequential()
+                      .domain([0, data.children.length])
+                      .interpolator(omxColorInterpolator())
+      const radius = Math.min(chartContainerHeight, chartWidth)/2 - chartPadding
+      const x = d3.scaleLinear().range([0, 2 * Math.PI])
+      const y = d3.scaleSqrt().range([0, radius])
+      const partition = d3.partition()
+      const arc = d3.arc()
+        .startAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x0))))
+        .endAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
+        .innerRadius(d => y(d.y0))
+        .outerRadius(d => y(d.y1))
+      const root = d3.hierarchy(data)
+      const colorScale = d3.scaleLinear().domain([0, 5]).range([0.3, 0.9])
+
+      // sum must be called on the hierarchy first to set values
+      root.sum(d => d.size)
+
+      const chartContainer =
+        svg.append('g')
+          .attr('id', 'chart-container')
+          .attr('width', chartContainerWidth)
+          .attr("transform", `translate(${width/2}, ${radius + chartPadding})`)
+
+      const labelContainer = svg.append('g')
+      const labelXPosition = width / 2
+      const labelYPosition = 2*radius + 4*chartPadding
+
+      labelContainer.append('text')
+        .text(placeholderLabel)
+        .attr('text-anchor', 'middle')
+        .attr('x', labelXPosition)
+        .attr('y', labelYPosition)
+        .style('font-size', '16px')
+
+      chartContainer.selectAll("path")
+        .data(partition(root).descendants())
+        .enter()
+        .append("path")
+        .attr("id", (d, i) => `path-${i}`)
+        .attr("d", arc)
+        .attr("class", "path")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", "0.5px")
+        .style("fill", (d, i, paths) => {
+          let fillColor = null
+
+          if(d.parent && d.children) {
+            fillColor = color(i)
+            d.color = fillColor
+          }
+          else if(!d.children) {
+            fillColor = d.parent.color
+            d3.select(paths[i]).style('opacity', colorScale(parseInt(d.data.name)))
+          }
+          else {
+            fillColor = 'transparent'
+          }
+          return fillColor
+        })
+        .on("click", d => {
+          svg.transition()
+            .duration(750)
+            .tween("scale", () => {
+              let xd = d3.interpolate(x.domain(), [d.x0, d.x1]),
+                  yd = d3.interpolate(y.domain(), [d.y0, 1]),
+                  yr = d3.interpolate(y.range(),  [d.y0 ? 80 : 0, radius])
+              return t => {
+                x.domain(xd(t))
+                y.domain(yd(t)).range(yr(t))
+              }
+            })
+            .selectAll("path")
+            .attrTween("d", d => () => arc(d))
+        })
+        .on('mouseover', d => {
+          labelContainer.selectAll('text').remove()
+
+          if(d.parent) {
+            labelContainer.append('text')
+              .text(`${relativeSize(d.value, totalCompanies)}%` )
+              .attr('text-anchor', 'middle')
+              .attr('stroke', '#000')
+              .attr('fill', '#444')
+              .attr('x', labelXPosition)
+              .attr('y', radius)
+              .attr('dy', 30)
+              .style('font-size', '60px')
+              .style('font-weight', 'bold')
+          }
+
+          const ratingLabel = d.children ? d.data.name : d.parent.data.name
+
+          labelContainer.append('text')
+            .text(ellipsis(ratingLabel))
+            .attr('text-anchor', 'middle')
+            .attr('x', labelXPosition)
+            .attr('y', labelYPosition)
+            .style('font-size', '16px')
+
+          if( !d.children ){
+            labelContainer.append('text')
+              .text(stars(d.data.name))
+              .attr('text-anchor', 'middle')
+              .attr('x', labelXPosition)
+              .attr('y', labelYPosition)
+              .attr('dy', 20)
+              .style('font-size', '16px')
+          }
+        })
+        .on('mouseout', () => {
+          labelContainer.selectAll('text').remove()
+          labelContainer.append('text')
+            .text(placeholderLabel)
+            .attr('text-anchor', 'middle')
+            .attr('x', labelXPosition)
+            .attr('y', labelYPosition)
+            .style('font-size', '16px')
+        })
+
+      if(!showLegend) return
+
+      // LEGEND =========================================================================
+      const legendContainer = svg.append('g')
+                                .attr('id', 'legend-container')
+                                .attr('width', width - chartContainerWidth)
+                                .attr('height', '100%')
+      const squareSize = 11
+
+      // place legend just below labelContainer
+      const legendYPosition = parseInt(
+                                Array.from(labelContainer
+                                  .node()
+                                  .firstElementChild.attributes)
+                                  .filter(x => x.name == 'y')[0].value
+                              ) + 2*chartPadding
+
+      legendContainer.selectAll('rect')
+        .data(root.children)
+        .enter()
+        .append('rect')
+        .attr('transform', `translate(${chartPadding}, ${legendYPosition})`)
+        .attr('x', 0)
+        .attr('y', (d,i) => i * 20 + 5.5)
+        .attr('width', squareSize)
+        .attr('height', squareSize)
+        .attr('stroke', 'black')
+        .attr('fill', (d,i) => chartContainer.select(`#path-${i + 1}`).data()[0].color)
+
+      svg.select('#legend-container')
+        .selectAll('text')
+        .data(root.children)
+        .enter()
+        .append('text')
+        .attr('transform', `translate(${chartPadding}, ${legendYPosition})`)
+        .attr('y', (d,i) => 20 * i + 15)
+        .attr('x', squareSize + chartPadding/2)
+        .text(d => ellipsis(d.data.name) + ` (${relativeSize(d.value, totalCompanies)}%)`)
+        .style('font-size', `${ squareSize }px`)
+        .append('title')
+        .text((d, i) =>  d.data.name);
+
+
+      // svg.append('line')
+      //   .attr('x1', 0)
+      //   .attr('x2', '100%')
+      //   .attr('y1', height/2)
+      //   .attr('y2', height/2)
+      //   .attr('stroke', 'red')
+      //   .attr('stroke-dasharray', '4')
+
+      // svg.append('line')
+      //   .attr('y1', 0)
+      //   .attr('y2', '100%')
+      //   .attr('x1', width/2)
+      //   .attr('x2', width/2)
+      //   .attr('stroke', 'red')
+      //   .attr('stroke-dasharray', '4')
+
+      // HELPER FUNCTIONS
+      function ellipsis(str){
+        return str.length > maxLabelSize ? str.substr(0, maxLabelSize - 3) + "..." : str
+      }
+
+      function stars(value){
+        const numStars = parseInt(value)
+        let str = ''
+        for(let i = 0; i < numStars; i++){
+          str += '★'
+        }
+        return str
+      }
+
+      function relativeSize(value, total){
+        return Math.round((value / total)*100 + Number.EPSILON)
+      }
+
+    }
+
+    // Use this function to select color scheme to keep it consistent across visualizations
+    function omxColorInterpolator(){
+      // more color schemes https://observablehq.com/@d3/color-schemes
+      return d3.interpolateRainbow
+    }
+
+    function appendNoDataMessage(svg, options){
+      const {
+        message = 'No data to display'
+      } = options
+
+      // not sure if there's a shorter way to get these
+      const width = Array.from(svg.node().attributes).find(x => x.name === 'width').value / 2
+      const height = Array.from(svg.node().attributes).find(x => x.name === 'height').value / 2
+
+      svg.style('background-color', '#eee')
+        .style('font-weight', 'bold')
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .attr('x', width)
+        .attr('y', height)
+        .text(message)
+    }
+
+    function downloadSVG(svgId){
+      const svg = document.querySelector(`svg#${svgId}`)
+      // Promisify the image-loading process
+      function loadImage(url) {
+        return new Promise(r => {
+          let i = new Image()
+          i.onload = (() => r(i))
+          i.src = url; })
+      }
+
+      let svgStr = (new XMLSerializer()).serializeToString(svg)
+
+      return loadImage(`data:image/svg+xml;base64,${window.btoa(svgStr)}`)
+      .then(img => {
+        let canvas = document.createElement('canvas');
+        let w = svg.width.baseVal.value
+        let h = svg.height.baseVal.value
+
+        let ctx = canvas.getContext('2d')
+        canvas.width = w
+        canvas.height = h
+        ctx.drawImage(img, 0, 0, w, h)
+
+        canvas.toBlob(function(blob){
+          let link = document.createElement('a')
+          link.download = `chart_${svg.id}.png`
+          link.href = URL.createObjectURL(blob);
+          link.click()
+          link.remove()
+          canvas.remove()
+        },'image/png')
+      })
+    }
+
+  </script>
+</html>
