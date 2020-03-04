@@ -279,35 +279,26 @@
 
       const {
         width = 600,
-        height = 600,
-        chartWidth = 300,
-        chartHeight = height,
+        chartContainerWidth = 300,
         chartPadding = 10,
         placeholderLabel = 'Internal Ratings',
+        maxLabelSize = 50,
         showLegend = true,
-        maxLabelSize = 50
+        legendLineSize = 20
       } = options
 
       const totalCompanies = data.companies_rated
-
-      const svg = d3.select(`#${containerId}`)
-        .append("svg")
-        .attr("id", containerId)
-        .attr("width", width)
-        .attr("height", height)
-        .attr('font-family', 'Arial')
+      const legendMaxSize = showLegend ? legendLineSize * data.children.length + chartPadding : 0
 
       if(data === null){
         appendNoDataMessage(svg, 'No ratings to display')
         return
       }
 
-      const chartContainerWidth = chartWidth
-      const chartContainerHeight = chartHeight
       const color = d3.scaleSequential()
                       .domain([0, data.children.length])
                       .interpolator(omxColorInterpolator())
-      const radius = Math.min(chartContainerHeight, chartWidth)/2 - chartPadding
+      const radius = chartContainerWidth/2 - chartPadding
       const x = d3.scaleLinear().range([0, 2 * Math.PI])
       const y = d3.scaleSqrt().range([0, radius])
       const partition = d3.partition()
@@ -318,9 +309,17 @@
         .outerRadius(d => y(d.y1))
       const root = d3.hierarchy(data)
       const colorScale = d3.scaleLinear().domain([0, 5]).range([0.3, 0.9])
-
+      const chartContainerHeight = 2 * radius
+      const labelPadding = 4 * chartPadding
       // sum must be called on the hierarchy first to set values
       root.sum(d => d.size)
+
+      const svg = d3.select(`#${containerId}`)
+        .append("svg")
+        .attr("id", containerId)
+        .attr("width", width)
+        .attr("height", legendMaxSize + chartContainerHeight + labelPadding + 40)
+        .attr('font-family', 'Arial')
 
       const chartContainer =
         svg.append('g')
@@ -330,7 +329,7 @@
 
       const labelContainer = svg.append('g')
       const labelXPosition = width / 2
-      const labelYPosition = 2*radius + 4*chartPadding
+      const labelYPosition = 2*radius + labelPadding
 
       labelContainer.append('text')
         .text(placeholderLabel)
@@ -439,15 +438,16 @@
                                   .node()
                                   .firstElementChild.attributes)
                                   .filter(x => x.name == 'y')[0].value
-                              ) + 2*chartPadding
+                              ) + 3*chartPadding
+      const legendXPosition = (width - chartContainerWidth)/2
 
       legendContainer.selectAll('rect')
         .data(root.children)
         .enter()
         .append('rect')
-        .attr('transform', `translate(${chartPadding}, ${legendYPosition})`)
-        .attr('x', 0)
-        .attr('y', (d,i) => i * 20 + 5.5)
+        .attr('transform', `translate(${legendXPosition}, ${legendYPosition})`)
+        .attr('x', chartPadding)
+        .attr('y', (d,i) => i * legendLineSize + 5.5)
         .attr('width', squareSize)
         .attr('height', squareSize)
         .attr('stroke', 'black')
@@ -458,9 +458,9 @@
         .data(root.children)
         .enter()
         .append('text')
-        .attr('transform', `translate(${chartPadding}, ${legendYPosition})`)
-        .attr('y', (d,i) => 20 * i + 15)
-        .attr('x', squareSize + chartPadding/2)
+        .attr('transform', `translate(${legendXPosition}, ${legendYPosition})`)
+        .attr('y', (d,i) => i * legendLineSize + 15)
+        .attr('x', squareSize + chartPadding*2)
         .text(d => ellipsis(d.data.name) + ` (${relativeSize(d.value, totalCompanies)}%)`)
         .style('font-size', `${ squareSize }px`)
         .append('title')
