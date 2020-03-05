@@ -20,46 +20,60 @@
 
     const sampleData = [{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 20659235 }, { "name": "Singapore", "value": 17000000 }, { "name": "Turkey", "value": 10000000 }, { "name": "United States", "value": 5001003 }, { "name": "Belgium", "value": 3400393 }, { "name": "France", "value": 1050000 }, { "name": "Spain", "value": 396169 }, { "name": "Italy", "value": 18025 }, { "name": "India", "value": 1000 }, { "name": "United     Kingdom", "value": 3 }, { "name": "Korea, Republic of", "value": 0 }, { "name": "Norway", "value": 0 }, { "name": "Australia", "value": 0 }, { "name": "Saudi Arabia", "value": 0 }, { "name": "Ghana", "value": 0 }, {"name": "Other", "value": 100000000}]
 
-    const newData = [{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 }, { "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },{ "name": "Switzerland", "value": 123876000 }, { "name": "Canada", "value": 123876000 },]
+    const fewData = [
+      { "name": "CountryA", "value": 100 },
+      { "name": "CountryB", "value": 100 },
+      { "name": "CountryC", "value": 100 },
+      { "name": "CountryD", "value": 100 },
+    ]
+    const noData1 = [{ "name": "Switzerland", "value": 123876000 },]
 
-    bubbleChart(sampleData.filter(x => x.value > 0), 'chart', {width: 500, height: 400} )
+    bubbleChart(noData1.filter(x => x.value > 0), 'chart', {width: 500, height: 400} )
 
     function bubbleChart(data, containerId, options){
       const { width = 500,
         height = 400,
         maxRadius = 35,
         bubbleOpacity = 0.6,
-        legendTextSize = 12
+        legendTextSize = 12,
+        showLegend = true,
+        placeholderLabel = 'Bubble Chart',
+        chartPadding = 10
       } = options
 
-      const svgPadding = width * 0.05
-      const chartContainerWidth = width - 2*svgPadding
+      if(data === [] || data === null || data.length < 2){
+        const svg = d3.select(`#${containerId}`)
+          .append("svg")
+          .attr("id", containerId)
+          .attr("width", width)
+          .attr("height", height)
+          .attr('font-family', 'Arial')
+        appendNoDataMessage(svg, {message: 'Not enough data to display chart'})
+        return -1
+      }
+
+      const chartContainerWidth = width - 2*chartPadding
       const chartContainerHeight = height
       const topValue = data.reduce((a, x) => x.value < a ? a : x.value, 0)
       const minValue = data.reduce((a, x) => x.value > a ? a : x.value, 0)
-      const numberScale = d3.scaleLinear().domain([0, topValue]).range([5, maxRadius])
-      const colorScale = d3
-        .scaleSequential()
-        .domain([0, data.length])
-        .interpolator(d3.interpolateCool)
-
+      const numberScale = d3.scaleSqrt().domain([0, topValue]).range([5, maxRadius])
+      const colorScale = d3.scaleSequential()
+                          .domain([0, data.length])
+                          .interpolator(omxColorInterpolator())
       const svg = d3.select(`#${containerId}`)
         .append("svg")
+        .attr("id", containerId)
         .attr("width", width)
-        .attr("height", height)
         .attr('font-family', 'Arial')
 
-      // Even spacing for bubbles
       const linearScale = d3.scaleLinear()
         .domain([0, data.length])
-        .range([0, chartContainerWidth])
+        .range([0, chartContainerWidth/2])
 
-      const chartContainer =
-        svg.append('g')
-          .attr('id', 'chart-container')
-          .attr('width', chartContainerWidth)
-          .attr("transform", `translate(${maxRadius + svgPadding/2}, ${maxRadius + svgPadding/2})`)
-
+      const chartContainer = svg.append('g')
+                              .attr('id', 'chart-container')
+                              .attr('width', chartContainerWidth)
+                              .attr('height', maxRadius + chartPadding)
       chartContainer
         .selectAll('.country-bubble')
         .data(data)
@@ -68,7 +82,7 @@
         .attr('class', `country-bubble`)
         .attr('id', (d,i) => `country-bubble-${i}`)
         .attr('r', d => numberScale(d.value))
-        .attr('cx', (d, i) => linearScale(i))
+        .attr('cx', (d, i) => linearScale(i) + maxRadius)
         .attr('fill', (d, i) => colorScale(i))
         .attr('opacity', bubbleOpacity)
         .on('mouseover', (d, i, paths) => {
@@ -80,12 +94,30 @@
           svg.select(`#legend-text-${i}`).style('font-weight', 'normal')
         })
 
-      const legendPadding = (height - (data.length * 20 + 5.5))/2
-      const legendContainer =
-        svg.append('g')
-            .attr('id', 'legend-container')
-            .attr('transform', `translate(${svgPadding}, ${legendPadding + maxRadius})`)
+      const chartContainerBBox = chartContainer.node().getBBox()
+      const chartMarginX = (width - chartContainer.node().getBBox().width)/2
+      const chartMarginY = maxRadius + chartPadding
 
+      chartContainer.attr("transform", `translate(${chartMarginX}, ${chartMarginY})`)
+
+      const labelContainer = svg.append('g')
+      const labelXPosition = width/2
+      const labelYPosition = 2*maxRadius + 2*chartPadding
+
+      labelContainer.append('text')
+        .text('')
+        .attr('text-anchor', 'middle')
+        .attr('x', labelXPosition)
+        .attr('y', labelYPosition)
+        .style('font-size', '16px')
+
+      if(!showLegend) return
+
+      // LEGEND =========================================================================
+      const legendContainer = svg.append('g')
+                                .attr('id', 'legend-container')
+                                .attr('width', width - chartContainerWidth)
+                                .attr('height', '100%')
       legendContainer
         .selectAll('rect')
         .data(data)
@@ -97,6 +129,7 @@
         .attr('y', (d,i) => i * 20 + 5.5)
         .attr('width', legendTextSize)
         .attr('height', legendTextSize)
+        .attr('stroke', 'black')
         .attr('fill', (d, i) => colorScale(i))
         .attr('opacity', bubbleOpacity)
 
@@ -105,12 +138,11 @@
         .data(data)
         .enter()
         .append('text')
-        .attr('transform', `translate(5,0)`)
         .attr('id', (d,i) => `legend-text-${i}`)
         .attr('class', `legend-text`)
         .attr('y', (d,i) => 20 * i + 15)
-        .attr('x', legendTextSize + 1)
-        .text(d => `${d.name} ($${d.value.toLocaleString()})`)
+        .attr('x', legendTextSize + chartPadding)
+        .text(d => `${d.name} ($ ${d.value.toLocaleString()})`)
         .style('font-family', 'Arial')
         .style('font-size', `${legendTextSize - 1 }px`)
         .on('mouseover', (d, i, paths) => {
@@ -122,6 +154,77 @@
           svg.selectAll(`.country-bubble, .legend-rect`).style('opacity', bubbleOpacity)
           d3.select(paths[i]).style('font-weight', 'normal')
         })
+
+      const legendContainerBBox = legendContainer.node().getBBox()
+      const legendYPosition = chartContainerBBox.height + 3 * chartPadding
+      const legendXPosition = (width - legendContainerBBox.width)/2
+
+      legendContainer
+        .attr('transform',`translate(${legendXPosition}, ${legendYPosition})`)
+
+      const totalHeight = chartContainerBBox.height + legendContainerBBox.height + 6*chartPadding
+
+      svg.attr("height", Math.min(height, totalHeight))
+
+      return 0
+    }
+
+    // Use this function to select color scheme to keep it consistent across visualizations
+    function omxColorInterpolator(){
+      // more color schemes https://observablehq.com/@d3/color-schemes
+      return d3.interpolateRainbow
+    }
+
+    function appendNoDataMessage(svg, options){
+      const {
+        message = 'No data to display'
+      } = options
+
+      // not sure if there's a shorter way to get these
+      const width = Array.from(svg.node().attributes).find(x => x.name === 'width').value / 2
+      const height = Array.from(svg.node().attributes).find(x => x.name === 'height').value / 2
+
+      svg.style('background-color', '#eee')
+        .style('font-weight', 'bold')
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .attr('x', width)
+        .attr('y', height)
+        .text(message)
+    }
+
+    function downloadSVG(svgId){
+      const svg = document.querySelector(`svg#${svgId}`)
+      // Promisify the image-loading process
+      function loadImage(url) {
+        return new Promise(r => {
+          let i = new Image()
+          i.onload = (() => r(i))
+          i.src = url; })
+      }
+
+      let svgStr = (new XMLSerializer()).serializeToString(svg)
+
+      return loadImage(`data:image/svg+xml;base64,${window.btoa(svgStr)}`)
+      .then(img => {
+        let canvas = document.createElement('canvas');
+        let w = svg.width.baseVal.value
+        let h = svg.height.baseVal.value
+
+        let ctx = canvas.getContext('2d')
+        canvas.width = w
+        canvas.height = h
+        ctx.drawImage(img, 0, 0, w, h)
+
+        canvas.toBlob(function(blob){
+          let link = document.createElement('a')
+          link.download = `chart_${svg.id}.png`
+          link.href = URL.createObjectURL(blob);
+          link.click()
+          link.remove()
+          canvas.remove()
+        },'image/png')
+      })
     }
   </script>
 </html>
