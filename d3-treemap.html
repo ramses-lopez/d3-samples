@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      svg {
+        background-color: #eeeeee
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+  </body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
+          integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
+          crossorigin="anonymous">
+  </script>
+  <script type="text/javascript">
+
+    const unspscData = {
+  "name": "UNSPSC Codes",
+  "children": [
+    {
+      "name": "30000000",
+      "size": 1,
+      "children": [
+        {
+          "name": "30140000",
+          "size": 1,
+          "children": []
+        },
+        {
+          "name": "30110000",
+          "size": 1,
+          "children": []
+        },
+        {
+          "name": "30170000",
+          "size": 1,
+          "children": []
+        },
+        {
+          "name": "30200000",
+          "size": 1,
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "32000000",
+      "size": 1,
+      "children": [
+        {
+          "name": "32150000",
+          "size": 1,
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "39000000",
+      "size": 1,
+      "children": [
+        {
+          "name": "39110000",
+          "size": 1,
+          "children": []
+        },
+        {
+          "name": "39120000",
+          "size": 1,
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "41000000",
+      "size": 1,
+      "children": [
+        {
+          "name": "41110000",
+          "size": 1,
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "56000000",
+      "size": 1,
+      "children": []
+    },
+    {
+      "name": "77000000",
+      "size": 1,
+      "children": []
+    },
+    {
+      "name": "81000000",
+      "size": 1,
+      "children": [
+        {
+          "name": "81160000",
+          "size": 1,
+          "children": []
+        },
+        {
+          "name": "81100000",
+          "size": 1,
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "86000000",
+      "size": 1,
+      "children": []
+    }
+  ]
+}
+
+    const naicsData = {
+  "name": "NAICS Codes",
+  "children": [
+    {
+      "name": "540000",
+      "size": 1,
+      "children": [
+        {
+          "name": "541000",
+          "size": 1,
+          "children": []
+        },
+        {
+          "name": "541400",
+          "size": 1,
+          "children": []
+        },
+        {
+          "name": "541700",
+          "size": 1,
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "410000",
+      "size": 1,
+      "children": []
+    }
+  ]
+}
+
+// TODO: I need to review this in more detail and remove unneeded code + tweak functionality
+function treemap_chart(data, containerId) {
+
+  console.log(data);
+
+  const margin = {
+          top: 24,
+          right: 0,
+          bottom: 0,
+          left: 0
+      }
+  const width = $(".products_visualization").width() - 34 //640
+  const height = 530
+  const formatNumber = d3.format(",d")
+  let transitioning = false
+
+
+  if ($(".visualization-display").length == 0){
+    width = $("#visualizations_carousel").width() - 34
+  }
+
+  // FIXME: These is not scaling anything
+  const x = d3.scaleLinear().domain([0, width]).range([0, width])
+  const y = d3.scaleLinear()
+      .domain([0, height - margin.top - margin.bottom])
+      .range([0, height - margin.top - margin.bottom])
+
+  const color = d3.scaleOrdinal()
+      .range(d3.schemeCategory10.map(c => {
+                                      c = d3.rgb(c)
+                                      c.opacity = 0.6
+                                      return c
+                                  }))
+
+  let treemap= null
+  let svg = null
+  let grandparent= null
+
+  updateDrillDown()
+
+  function updateDrillDown() {
+    if (svg) {
+      svg.selectAll("*").remove()
+    }
+    else {
+      svg = d3.select(`#${containerId}`)
+        .append("svg")
+        .attr('id',containerId)
+        .attr("width", width)
+        .attr("height", height - margin.bottom - margin.top)
+        .style("margin-left", -margin.left + "px")
+        .style("margin-right", -margin.right + "px")
+        .style("font-family", "Arial")
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .style("shape-rendering", "crispEdges")
+
+      grandparent = svg.append("g")
+        .attr("class", "grandparent")
+
+      grandparent.append("rect")
+        .attr("y", -margin.top)
+        .attr("width", width)
+        .attr("height", margin.top)
+
+      grandparent.append("text")
+        .attr("x", 6)
+        .attr("y", 6 - margin.top)
+        .attr("dy", ".75em")
+
+      treemap = d3.treemap()
+        .tile(d3.treemapResquarify.ratio(height / width * 0.5 * (1 + Math.sqrt(5))))
+        .size([width, height])
+        .round(false)
+        .paddingInner(1)
+    }
+
+    let root = d3.hierarchy(data)
+      .eachBefore(d => {
+        d.id = (d.parent ? d.parent.id + "." : "") + d.data.name
+      })
+      .sum(d => d.size)
+      .sort((a, b) => b.height - a.height || b.value - a.value )
+
+    initialize(root)
+    accumulate(root)
+    layout(root)
+    treemap(root)
+    display(root)
+  }
+
+  function initialize(root) {
+      root.x = root.y = 0
+      root.x1 = width
+      root.y1 = height
+      root.depth = 0
+  }
+
+  // Aggregate the values for internal nodes. This is normally done by the
+  // treemap layout, but not here because of our custom implementation.
+  // We also take a snapshot of the original children (_children) to avoid
+  // the children being overwritten when when layout is computed.
+  function accumulate(d) {
+      //console.log('accumulate called ' + d.data.name)
+      return (d._children = d.children) ?
+          d.value = d.children.reduce(function(p, v) {
+              return p + accumulate(v)
+          }, 0) : d.value
+  }
+
+  // Compute the treemap layout recursively such that each group of siblings
+  // uses the same size (1×1) rather than the dimensions of the parent cell.
+  // This optimizes the layout for the current zoom state. Note that a wrapper
+  // object is created for the parent node for each group of siblings so that
+  // the parent’s dimensions are not discarded as we recurse. Since each group
+  // of sibling was laid out in 1×1, we must rescale to fit using absolute
+  // coordinates. This lets us use a viewport to zoom.
+  function layout(d) {
+      if (d._children) {
+          //    treemap.nodes({_children: d._children})
+          //    treemap(d)
+          d._children.forEach(function(c) {
+              //c.x0 = d.x0 + c.x0 * (d.x1 - d.x0)
+              //c.y0 = d.y0 + c.y0 * (d.y1 - d.y0)
+              //c.x1 *= d.x1
+              //c.y1 *= d.y1
+              c.x0 = d.x0 + c.x0 * d.x1
+              c.y0 = d.y0 + c.y0 * d.y1
+              c.x1 *= (d.x1 - d.x0)
+              c.y1 *= (d.y1 - d.y0)
+              c.parent = d
+              layout(c)
+          })
+      }
+  }
+
+  function display(d) {
+      grandparent
+          .datum(d.parent)
+          .on("click", transition)
+          .select("text")
+          .text(name(d))
+
+      var g1 = svg.insert("g", ".grandparent")
+          .datum(d)
+          .attr("class", "depth")
+
+      var g = g1.selectAll("g")
+          .data(d._children)
+          .enter().append("g")
+      g.filter(function(d) {
+              return d._children
+          })
+          .classed("children", true)
+          .on("click", transition)
+
+      var children = g.selectAll(".child")
+          .data(function(d) {
+              return d._children || [d]
+          })
+          .enter().append("g")
+
+      children.append("rect")
+          .attr("class", "child")
+          .call(rect)
+          .append("title")
+          .text(function(d) {
+              return d.data.name + " (" + formatNumber(d.value) + ")"
+          })
+
+      children.append("text")
+          .attr("class", "ctext")
+          .text(function(d) {
+              return d.data.name
+          })
+          .call(text2)
+
+      g.append("rect")
+          .attr("class", "parent")
+          .call(rect)
+
+      var t = g.append("text")
+          .attr("class", "ptext")
+          .attr("dy", ".75em")
+
+      t.append("tspan")
+          .text(function(d) {
+              return d.data.name
+          })
+
+      t.append("tspan")
+          .attr("dy", "1.0em")
+          .text(function(d) {
+              return formatNumber(d.value)
+          })
+
+      t.call(text)
+
+      //TODO: wat --
+      g.selectAll("rect").style("fill", d => color(d.data.name))
+
+      function transition(d) {
+          if (transitioning || !d) return
+          transitioning = true
+          var g2 = display(d),
+              t1 = g1.transition().duration(750),
+              t2 = g2.transition().duration(750)
+
+          // Update the domain only after entering new elements.
+          //x.domain([d.x0, d.x0 + d.x1])
+          //y.domain([d.y0, d.y0 + d.y1])
+          x.domain([d.x0, d.x0 + (d.x1 - d.x0)])
+          y.domain([d.y0, d.y0 + (d.y1 - d.y0)])
+
+          // Enable anti-aliasing during the transition.
+          svg.style("shape-rendering", null)
+
+          // Draw child nodes on top of parent nodes.
+          svg.selectAll(".depth").sort(function(a, b) {
+              //console.log('.depth sort a ' + a.depth + ' b ' + b.depth)
+              return a.depth - b.depth
+          })
+
+          // Fade-in entering text.
+          g2.selectAll("text").style("fill-opacity", 0)
+
+          // Transition to the new view.
+          t1.selectAll(".ptext").call(text).style("fill-opacity", 0)
+          t2.selectAll(".ptext").call(text).style("fill-opacity", 1)
+          t1.selectAll(".ctext").call(text2).style("fill-opacity", 0)
+          t2.selectAll(".ctext").call(text2).style("fill-opacity", 1)
+          t1.selectAll("rect").call(rect)
+          t2.selectAll("rect").call(rect)
+
+          // Remove the old node when the transition is finished.
+          t1.remove().on("end", function() {
+              svg.style("shape-rendering", "crispEdges")
+              transitioning = false
+          })
+      }
+      return g
+  }
+
+  function text(text) {
+    text.selectAll("tspan")
+      .attr("x", function(d) {
+          return x(d.x0) + 6
+      })
+    text.attr("x", function(d) {
+            return x(d.x0) + 6
+        })
+        .attr("y", function(d) {
+            return y(d.y0) + 3
+        })
+        .style("opacity", function(d) {
+            var w = x(d.x1) - x(d.x0)
+            //console.log("text opacity setting textlength " + this.getComputedTextLength() + " d size " + w)
+            return this.getComputedTextLength() < w - 6 ? 1 : 0
+        })
+  }
+
+  function text2(text) {
+    text.attr("x", function(d) {
+          return x(d.x1) - this.getComputedTextLength() - 6
+        })
+        .attr("y", function(d) {
+          return y(d.y1) - 6
+        })
+        .style("opacity", function(d) {
+          var w = x(d.x1) - x(d.x0)
+          //console.log("text2 opacity setting textlength " + this.getComputedTextLength() + " d size " + w)
+          return this.getComputedTextLength() < w - 6 ? 1 : 0
+        })
+  }
+
+  function rect(rect) {
+    rect.attr("x", function(d) {
+            return x(d.x0)
+        })
+        .attr("y", function(d) {
+            return y(d.y0)
+        })
+        .attr("width", function(d) {
+            var w = x(d.x1) - x(d.x0)
+            //console.log('id ' + d.id + ' rect width ' + w)
+            return w
+        })
+        .attr("height", function(d) {
+            var h = y(d.y1) - y(d.y0)
+            //console.log('id ' + d.id + ' rect height ' + h)
+            return h
+        })
+  }
+
+  function name(d) {
+    return d.parent ? name(d.parent) + " / " + d.data.name + " (" + formatNumber(d.value) + ")" : d.data.name + " (" + formatNumber(d.value) + ")"
+  }
+}
+
+
+
+
+    function omxColorInterpolator(){
+      // more color schemes https://observablehq.com/@d3/color-schemes
+      return d3.interpolateRainbow
+    }
+
+    function appendNoDataMessage(svg, options){
+      const {
+        message = 'No data to display'
+      } = options
+
+      // not sure if there's a shorter way to get these
+      const width = Array.from(svg.node().attributes).find(x => x.name === 'width').value / 2
+      const height = Array.from(svg.node().attributes).find(x => x.name === 'height').value / 2
+
+      svg.style('background-color', '#eee')
+        .style('font-weight', 'bold')
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .attr('x', width)
+        .attr('y', height)
+        .text(message)
+    }
+  </script>
+</html>

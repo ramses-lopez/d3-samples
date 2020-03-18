@@ -28,146 +28,149 @@
     ]
     const noData1 = [{ "name": "Switzerland", "value": 123876000 },]
 
-    bubbleChart(noData1.filter(x => x.value > 0), 'chart', {width: 500, height: 400} )
+    bubbleChart(sampleData.filter(x => x.value > 0), 'chart', {width: 500, height: 400, showLegend: false, placeholderText: 'Annual Sales'} )
 
-    function bubbleChart(data, containerId, options){
-      const { width = 500,
-        height = 400,
-        maxRadius = 35,
-        bubbleOpacity = 0.6,
-        legendTextSize = 12,
-        showLegend = true,
-        placeholderLabel = 'Bubble Chart',
-        chartPadding = 10
-      } = options
+    function bubbleChart(data, containerId, options) {
+    const { width = 500,
+      height = 400,
+      maxRadius = 35,
+      bubbleOpacity = 0.6,
+      legendTextSize = 12,
+      showLegend = true,
+      chartPadding = 10,
+      placeholderText = ''
+    } = options
 
-      if(data === [] || data === null || data.length < 2){
-        const svg = d3.select(`#${containerId}`)
-          .append("svg")
-          .attr("id", containerId)
-          .attr("width", width)
-          .attr("height", height)
-          .attr('font-family', 'Arial')
-        appendNoDataMessage(svg, {message: 'Not enough data to display chart'})
-        return -1
-      }
-
-      const chartContainerWidth = width - 2*chartPadding
-      const chartContainerHeight = height
-      const topValue = data.reduce((a, x) => x.value < a ? a : x.value, 0)
-      const minValue = data.reduce((a, x) => x.value > a ? a : x.value, 0)
-      const numberScale = d3.scaleSqrt().domain([0, topValue]).range([5, maxRadius])
-      const colorScale = d3.scaleSequential()
-                          .domain([0, data.length])
-                          .interpolator(omxColorInterpolator())
+    if (data === [] || data === null || data.length < 2) {
       const svg = d3.select(`#${containerId}`)
         .append("svg")
         .attr("id", containerId)
         .attr("width", width)
+        .attr("height", height)
         .attr('font-family', 'Arial')
-
-      const linearScale = d3.scaleLinear()
-        .domain([0, data.length])
-        .range([0, chartContainerWidth/2])
-
-      const chartContainer = svg.append('g')
-                              .attr('id', 'chart-container')
-                              .attr('width', chartContainerWidth)
-                              .attr('height', maxRadius + chartPadding)
-      chartContainer
-        .selectAll('.country-bubble')
-        .data(data)
-        .enter()
-        .append('circle')
-        .attr('class', `country-bubble`)
-        .attr('id', (d,i) => `country-bubble-${i}`)
-        .attr('r', d => numberScale(d.value))
-        .attr('cx', (d, i) => linearScale(i) + maxRadius)
-        .attr('fill', (d, i) => colorScale(i))
-        .attr('opacity', bubbleOpacity)
-        .on('mouseover', (d, i, paths) => {
-          svg.select(`#country-bubble-${i}, #legend-rect-${i}`).style('opacity', 1)
-          svg.select(`#legend-text-${i}`).style('font-weight', 'bold')
-        })
-        .on('mouseout', (d, i, paths) => {
-          svg.selectAll(`.country-bubble, .legend-rect`).style('opacity', bubbleOpacity)
-          svg.select(`#legend-text-${i}`).style('font-weight', 'normal')
-        })
-
-      const chartContainerBBox = chartContainer.node().getBBox()
-      const chartMarginX = (width - chartContainer.node().getBBox().width)/2
-      const chartMarginY = maxRadius + chartPadding
-
-      chartContainer.attr("transform", `translate(${chartMarginX}, ${chartMarginY})`)
-
-      const labelContainer = svg.append('g')
-      const labelXPosition = width/2
-      const labelYPosition = 2*maxRadius + 2*chartPadding
-
-      labelContainer.append('text')
-        .text('')
-        .attr('text-anchor', 'middle')
-        .attr('x', labelXPosition)
-        .attr('y', labelYPosition)
-        .style('font-size', '16px')
-
-      if(!showLegend) return
-
-      // LEGEND =========================================================================
-      const legendContainer = svg.append('g')
-                                .attr('id', 'legend-container')
-                                .attr('width', width - chartContainerWidth)
-                                .attr('height', '100%')
-      legendContainer
-        .selectAll('rect')
-        .data(data)
-        .enter()
-        .append('rect')
-        .attr('id', (d,i) => `legend-rect-${i}`)
-        .attr('class', `legend-rect`)
-        .attr('x', 0)
-        .attr('y', (d,i) => i * 20 + 5.5)
-        .attr('width', legendTextSize)
-        .attr('height', legendTextSize)
-        .attr('stroke', 'black')
-        .attr('fill', (d, i) => colorScale(i))
-        .attr('opacity', bubbleOpacity)
-
-      legendContainer
-        .selectAll('text')
-        .data(data)
-        .enter()
-        .append('text')
-        .attr('id', (d,i) => `legend-text-${i}`)
-        .attr('class', `legend-text`)
-        .attr('y', (d,i) => 20 * i + 15)
-        .attr('x', legendTextSize + chartPadding)
-        .text(d => `${d.name} ($ ${d.value.toLocaleString()})`)
-        .style('font-family', 'Arial')
-        .style('font-size', `${legendTextSize - 1 }px`)
-        .on('mouseover', (d, i, paths) => {
-          svg.select(`#country-bubble-${i}, #legend-text-${i}, #legend-rect-${i}`)
-            .style('opacity', 1)
-          d3.select(paths[i]).style('font-weight', 'bold')
-        })
-        .on('mouseout', (d, i, paths) => {
-          svg.selectAll(`.country-bubble, .legend-rect`).style('opacity', bubbleOpacity)
-          d3.select(paths[i]).style('font-weight', 'normal')
-        })
-
-      const legendContainerBBox = legendContainer.node().getBBox()
-      const legendYPosition = chartContainerBBox.height + 3 * chartPadding
-      const legendXPosition = (width - legendContainerBBox.width)/2
-
-      legendContainer
-        .attr('transform',`translate(${legendXPosition}, ${legendYPosition})`)
-
-      const totalHeight = chartContainerBBox.height + legendContainerBBox.height + 6*chartPadding
-
-      svg.attr("height", Math.min(height, totalHeight))
-
-      return 0
+      appendNoDataMessage(svg, { message: 'Not enough data to display chart' })
+      return -1
     }
+
+    const chartContainerWidth = width - 2 * chartPadding
+    const chartContainerHeight = height
+    const topValue = data.reduce((a, x) => x.value < a ? a : x.value, 0)
+    const minValue = data.reduce((a, x) => x.value > a ? a : x.value, 0)
+    const numberScale = d3.scaleSqrt().domain([0, topValue]).range([5, maxRadius])
+    const colorScale = d3.scaleSequential()
+      .domain([0, data.length])
+      .interpolator(omxColorInterpolator())
+    const svg = d3.select(`#${containerId}`)
+      .append("svg")
+      .attr("id", containerId)
+      .attr("width", width)
+      .attr('font-family', 'Arial')
+
+    const linearScale = d3.scaleLinear()
+      .domain([0, data.length])
+      .range([0, chartContainerWidth / 2])
+
+    const chartContainer = svg.append('g')
+      .attr('id', 'chart-container')
+      .attr('width', chartContainerWidth)
+      .attr('height', maxRadius + chartPadding)
+    chartContainer
+      .selectAll('.country-bubble')
+      .data(data)
+      .enter()
+      .append('circle')
+      .attr('class', `country-bubble`)
+      .attr('id', (d, i) => `country-bubble-${i}`)
+      .attr('r', d => numberScale(d.value))
+      .attr('cx', (d, i) => linearScale(i) + maxRadius)
+      .attr('fill', (d, i) => colorScale(i))
+      .attr('opacity', bubbleOpacity)
+      .on('mouseover', (d, i, paths) => {
+        svg.select(`#country-bubble-${i}, #legend-rect-${i}`).style('opacity', 1)
+        svg.select(`#legend-text-${i}`).style('font-weight', 'bold')
+        labelContainer.selectAll('text').text(() => `${d.name} ($${d.value.toLocaleString()})`)
+      })
+      .on('mouseout', (d, i, paths) => {
+        svg.selectAll(`.country-bubble, .legend-rect`).style('opacity', bubbleOpacity)
+        svg.select(`#legend-text-${i}`).style('font-weight', 'normal')
+        labelContainer.selectAll('text').text(placeholderText)
+      })
+
+    const chartContainerBBox = chartContainer.node().getBBox()
+    const chartMarginX = (width - chartContainer.node().getBBox().width) / 2
+    const chartMarginY = maxRadius + chartPadding
+
+    chartContainer.attr("transform", `translate(${chartMarginX}, ${chartMarginY})`)
+
+    const labelContainer = svg.append('g')
+    const labelXPosition = width / 2
+    const labelYPosition = 2 * maxRadius + 2 * chartPadding
+
+    labelContainer.append('text')
+      .text(placeholderText)
+      .attr('text-anchor', 'middle')
+      .attr('x', labelXPosition)
+      .attr('y', labelYPosition)
+      .style('font-size', '16px')
+
+    if (!showLegend) return
+
+    // LEGEND =========================================================================
+    const legendContainer = svg.append('g')
+      .attr('id', 'legend-container')
+      .attr('width', width - chartContainerWidth)
+      .attr('height', '100%')
+    legendContainer
+      .selectAll('rect')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('id', (d, i) => `legend-rect-${i}`)
+      .attr('class', `legend-rect`)
+      .attr('x', 0)
+      .attr('y', (d, i) => i * 20 + 5.5)
+      .attr('width', legendTextSize)
+      .attr('height', legendTextSize)
+      .attr('stroke', 'black')
+      .attr('fill', (d, i) => colorScale(i))
+      .attr('opacity', bubbleOpacity)
+
+    legendContainer
+      .selectAll('text')
+      .data(data)
+      .enter()
+      .append('text')
+      .attr('id', (d, i) => `legend-text-${i}`)
+      .attr('class', `legend-text`)
+      .attr('y', (d, i) => 20 * i + 15)
+      .attr('x', legendTextSize + chartPadding)
+      .text(d => `${d.name} ($ ${d.value.toLocaleString()})`)
+      .style('font-family', 'Arial')
+      .style('font-size', `${legendTextSize - 1}px`)
+      .on('mouseover', (d, i, paths) => {
+        svg.select(`#country-bubble-${i}, #legend-text-${i}, #legend-rect-${i}`)
+          .style('opacity', 1)
+        d3.select(paths[i]).style('font-weight', 'bold')
+      })
+      .on('mouseout', (d, i, paths) => {
+        svg.selectAll(`.country-bubble, .legend-rect`).style('opacity', bubbleOpacity)
+        d3.select(paths[i]).style('font-weight', 'normal')
+      })
+
+    const legendContainerBBox = legendContainer.node().getBBox()
+    const legendYPosition = chartContainerBBox.height + 3 * chartPadding
+    const legendXPosition = (width - legendContainerBBox.width) / 2
+
+    legendContainer
+      .attr('transform', `translate(${legendXPosition}, ${legendYPosition})`)
+
+    const totalHeight = chartContainerBBox.height + legendContainerBBox.height + 6 * chartPadding
+
+    svg.attr("height", Math.min(height, totalHeight))
+
+    return 0
+  }
+
 
     // Use this function to select color scheme to keep it consistent across visualizations
     function omxColorInterpolator(){

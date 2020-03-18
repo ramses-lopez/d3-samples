@@ -85,235 +85,231 @@
       }
     ]
 
-    cPie(sampleData, 'chart3', {width: 450, height: 350, discRotation: 270})
-    cPie(employeeData, 'chart2', {width: 450, height: 350, legendPositionRatio: 0.6})
-    cPie(ownershipData, 'chart', {width: 450, height: 350, apertureSize: 0.1, discRotation: 270})
+    let empty = []
+  // cPie(sampleData, 'chart3',   { width: 450, height: 350, discRotation: 270 })
+  cPie(ownershipData, 'chart', { width: 450, height: 350, apertureSize: 0.1, discRotation: 270 })
+  cPie(empty, 'chart2', { width: 450, height: 350})
 
-    function cPie(data, containerId, options) {
-      const { width = 350,
-        height = 300,
-        scale = 1,
-        opacity = 0.75,
-        opacityHover = 1,
-        legendPositionRatio = 0.70,
-        discWidth = 15,
-        innerRadius = 30,
-        discMargin = 0,
-        apertureSize = 0,
-        discRotation = 0
-      } = options
+  function cPie(data, containerId, options) {
+    const { width = 350,
+      height = 300,
+      scale = 1,
+      opacity = 0.75,
+      opacityHover = 1,
+      discWidth = 20,
+      innerRadius = 10,
+      discMargin = 0,
+      apertureSize = 0,
+      discRotation = 270,
+      showLegend = true,
+      chartPadding = 10
+    } = options
 
-      let radius = Math.min(width, height) / 2
-      let color = d3.scaleOrdinal(d3.schemeCategory10)
-      let filteredData = data.map(d => { return { name: d.name, size: parseInt(d.size)} })
-                          .filter(d => d.size > 0)
-                          .sort((a,b) => a.size < b.size ? 1 : -1)
-      // max angle will be 90% to create a gap
-      // const topValue = Math.max(...data.map( x => parseInt(x.size)))
-      // const topValue = filteredData.map(x => x.size).reduce( (a, x) => x + a, 0)
-      const topValue = 100;
+    const radius = Math.min(width, height) / 2
+    const color = d3.scaleSequential()
+      .domain([0, data.length])
+      .interpolator(omxColorInterpolator())
+    const filteredData = data.map(d => { return { name: d.name, size: parseInt(d.size) } })
+      .filter(d => d.size > 0)
+      .sort((a, b) => a.size < b.size ? 1 : -1)
 
-      let domainScale = d3.scaleLinear()
-        .domain([0, topValue])
-        .range([0, (2 * Math.PI * (1-apertureSize))])
+    // The top domain value will be the sum of all sizes
+    const topValue = filteredData.map(x => x.size).reduce((a, x) => x + a, 0)
+    const domainScale = d3.scaleLinear()
+      .domain([0, topValue])
+      .range([0, (2 * Math.PI * (1 - apertureSize))])
 
-      let svg = d3.select(`#${containerId}`)
-        .append('svg')
-        .attr('id', `svg_${containerId}`)
-        .attr('width', width)
-        .attr('height', height)
-        .attr('transform', `scale(${scale})`)
-        .style('padding', '5px')
+    const valueScale = d3.scaleLinear()
+      .domain([0, topValue])
+      .range([0, 100])
 
-      //group for chart
-      let chartContainer = svg.append('g').attr('id', 'chart-container')
-      //group for legend
-      let legendContainer = svg.append('g').attr('id', 'legend')
+    const svg = d3.select(`#${containerId}`)
+      .append('svg')
+      .attr('id', containerId)
+      .attr('width', width)
+      .attr('height', height)
+      .attr('transform', `scale(${scale})`)
+      .style('padding', '5px')
 
-      // Size of the aperture: 90 degrees + 10% of pi, converted to degrees
-      let apertureArc = discRotation + ((2*Math.PI * apertureSize)/2) * 180/Math.PI
-      let arc = d3.arc()
-                  .innerRadius((d,i) => i * discWidth + innerRadius)
-                  .outerRadius((d,i) => (i + 1) * discWidth + innerRadius - discMargin)
-                  .startAngle(0)
-                  .endAngle(d => domainScale(d.size))
-
-      let chartXPosition = (width * legendPositionRatio)/2
-      let chartYPosition = (height)/2
-
-      // Set placeholder line that always represent 100%
-      chartContainer.selectAll('path')
-        .data([{size: topValue}])
-        .enter()
-        .append('path')
-        .attr('d', d3.arc()
-                    .innerRadius(innerRadius - 2 * discMargin)
-                    .outerRadius(innerRadius - discMargin)
-                    .startAngle(0)
-                    .endAngle(d => domainScale(d.size))
-        )
-        .attr('fill', '#000000')
-        .attr('x', chartXPosition)
-        .attr('y', chartYPosition)
-        .attr('transform', `translate(${chartXPosition},${chartYPosition}) rotate(${apertureArc})`)
-        .attr('stroke', '#000000')
-
-      chartContainer.selectAll('.data-disc')
-        .data(filteredData)
-        .enter()
-        .append('path')
-        .attr('class', 'data-disc')
-        .attr('id', (d,i) => `data-disc-${i}`)
-        .attr('d', arc)
-        .attr('fill', (d,i) => color(i))
-        .attr('x', chartXPosition)
-        .attr('y', chartYPosition)
-        .attr('transform', `translate(${chartXPosition},${chartYPosition}) rotate(${apertureArc})`)
-        .attr('stroke', '#000000')
-        .style('opacity', opacity)
-        .on("mouseover", (d, i, paths) => {
-
-          d3.selectAll('.data-disc').style("opacity", opacity)
-          d3.select(paths[i]).style("opacity", opacityHover)
-
-          let g = chartContainer
-            .style("cursor", "pointer")
-            .append("g")
-            .attr("class", "tooltip")
-            .style("opacity", 1)
-
-          svg.select(`#legend-${i}`).style('font-weight', 'bold')
-
-          const labelXPosition = chartXPosition
-          const labelYPosition = height - 50
-
-          g.append("text")
-            .text(d.name)
-            .attr('text-anchor', 'middle')
-            .attr('x', labelXPosition)
-            .attr('y', labelYPosition)
-            .attr('dy', 20)
-            .style('font-family', 'arial')
-            .style('font-size', '14px')
-
-          g.append("text")
-            .text(d.size)
-            .attr('text-anchor', 'middle')
-            .attr('x', labelXPosition)
-            .attr('y', labelYPosition)
-            .attr('dy', -5)
-            .style('font-family', 'arial')
-            .style('font-size', '30px')
-            .style('font-weight', 'bolder')
-        })
-        .on("mouseout", d => {
-          chartContainer
-            .selectAll(".tooltip")
-            .remove()
-
-          chartContainer
-            .selectAll('.data-disc')
-            .style("opacity", opacity)
-            .style('cursor', 'pointer')
-
-          svg.selectAll(`.legend-text`).style('font-weight', 'normal')
-        })
-
-      // LEGEND
-      let squareSize = 12
-      let legendPadding = (height - (filteredData.length * 20 + 5.5))/2
-
-      svg.selectAll('rect')
-        .data(filteredData)
-        .enter()
-        .append('rect')
-        .attr('transform', `translate(${width*legendPositionRatio}, ${legendPadding})`)
-        .attr('x', 0)
-        .attr('y', (d,i) => i * 20 + 5.5)
-        .attr('width', squareSize)
-        .attr('height', squareSize)
-        .attr('stroke', 'black')
-        .attr('fill', (d, i) => color(i))
-        .style('opacity', opacity)
-
-      svg.select('#legend')
-        .selectAll('text')
-        .data(filteredData)
-        .enter()
-        .append('text')
-        .attr('transform', `translate(${width * legendPositionRatio + 5}, ${legendPadding})`)
-        .attr('id', (d,i) => `legend-${i}`)
-        .attr('class', `legend-text`)
-        .attr('y', (d,i) => 20 * i + 15)
-        .attr('x', squareSize + 1)
-        .text(d => `${d.name} (${d.size})`)
-        .style('font-family', 'Arial')
-        .style('font-size', '11px')
-        .on('mouseover', (d, i, paths) => {
-          svg.select(`#data-disc-${i}`).style('opacity', opacityHover)
-          d3.select(paths[i]).style('font-weight', 'bold')
-        })
-        .on('mouseout', (d, i, paths) => {
-          svg.selectAll(`.data-disc`).style('opacity',opacity)
-          d3.select(paths[i]).style('font-weight', 'normal')
-        })
-
-      svg.append('line')
-        .attr('x1', chartXPosition)
-        .attr('x2', chartXPosition)
-        .attr('y1', 0)
-        .attr('y2', '100%')
-        .attr('stroke', 'magenta')
-        .attr('stroke-dasharray', '2')
-
-      svg.append('line')
-        .attr('y1', chartXPosition)
-        .attr('y2', chartXPosition)
-        .attr('x1', 0)
-        .attr('x2', '100%')
-        .attr('stroke', 'magenta')
-        .attr('stroke-dasharray', '2')
-
-      // const labelXPosition = chartXPosition
-      // const labelYPosition = height - 50
-      //
-      // svg.append('text')
-      //   .text('Label test')
-      //   .attr('text-anchor', 'middle')
-      //   .attr('x', labelXPosition)
-      //   .attr('y', labelYPosition)
-      //   .style('font-family', 'Arial')
-      //   .style('font-size', '14px')
-      //
-      // svg.append('text')
-      //   .text('350')
-      //   .attr('text-anchor', 'middle')
-      //   .attr('x', labelXPosition)
-      //   .attr('y', labelYPosition)
-      //   .attr('dy', 20)
-      //   .style('font-family', 'Arial')
-      //   .style('font-size', '20px')
-
-      // d3.select(`#${containerId}`)
-      //   .append('a')
-      //   .text("Download chart")
-      //   .attr('href', `javascript:void(0)`)
-      //   .attr('onclick', `downloadSVG(document.getElementById('svg_${containerId}'))`)
+    if(filteredData.length === 0){
+      appendNoDataMessage(svg, {})
+      return
     }
 
-    function downloadSVG(svg){
-      // Promisify the image-loading process
-      function loadImage(url) {
-        return new Promise(r => {
-          let i = new Image()
-          i.onload = (() => r(i))
-          i.src = url;
-        })
+    //group for chart
+    const chartContainer = svg.append('g').attr('id', 'chart-container')
+    //group for legend
+    const legendContainer = svg.append('g').attr('id', 'legend')
+
+    // Size of the aperture: 90 degrees + 10% of pi, converted to degrees
+    const apertureArc = discRotation + ((2 * Math.PI * apertureSize) / 2) * 180 / Math.PI
+    const arc = d3.arc()
+      .innerRadius((d, i) => i * discWidth + innerRadius)
+      .outerRadius((d, i) => (i + 1) * discWidth + innerRadius - discMargin)
+      .startAngle(0)
+      .endAngle(d => domainScale(d.size))
+
+    const charHeight = filteredData.length * discWidth + innerRadius
+    const chartXPosition = (width / 2)
+    const chartYPosition = charHeight
+
+    let totalHeight = chartContainer.node().getBBox().height + 10 * chartPadding
+
+    chartContainer.selectAll('.data-disc')
+      .data(filteredData)
+      .enter()
+      .append('path')
+      .attr('class', 'data-disc')
+      .attr('id', (d, i) => `data-disc-${i}`)
+      .attr('d', arc)
+      .attr('fill', (d, i) => color(i))
+      .attr('stroke', '#444')
+      .attr('transform', `translate(${chartXPosition}, ${chartYPosition}) rotate(${apertureArc})`)
+      .style('opacity', opacity)
+      .on("mouseover", (d, i, paths) => {
+        d3.selectAll('.data-disc').style("opacity", opacity)
+        d3.select(paths[i]).style("opacity", opacityHover)
+        svg.select(`#legend-${i}`).style('font-weight', 'bold')
+        if(!showLegend){
+          let chartContainerBBox = chartContainer.node().getBBox()
+          let toolTipMargin = chartContainerBBox.height + chartContainerBBox.y + chartPadding * 5
+          showTooltip(d, toolTipMargin)
+        }
+      })
+      .on("mouseout", d => {
+        chartContainer.selectAll(".tooltip").remove()
+        chartContainer.selectAll('.data-disc').style("opacity", opacity).style('cursor', 'pointer')
+        svg.selectAll(`.legend-text`).style('font-weight', 'normal')
+      })
+
+    if(!showLegend){
+      let chartContainerBBox = chartContainer.node().getBBox()
+      let toolTipMargin = chartContainerBBox.height + chartContainerBBox.y + chartPadding * 5
+      svg.attr("height", Math.min(height, toolTipMargin + 50))
+      return
+    }
+
+    // LEGEND
+    const squareSize = 11
+    const legendPadding = radius * 2 + 30
+
+    legendContainer.selectAll('rect')
+      .data(filteredData)
+      .enter()
+      .append('rect')
+      .attr('x', 0)
+      .attr('y', (d, i) => i * 20 + 5.5)
+      .attr('width', squareSize)
+      .attr('height', squareSize)
+      .attr('stroke', 'black')
+      .attr('fill', (d, i) => color(i))
+      .style('opacity', opacity)
+
+    legendContainer
+      .selectAll('.legend-text')
+      .data(filteredData)
+      .enter()
+      .append('text')
+      .attr('id', (d, i) => `legend-${i}`)
+      .attr('class', `legend-text`)
+      .attr('y', (d, i) => 20 * i + 15)
+      .attr('x', squareSize + 5)
+      .text(d => `${d.name} (${scaleValue(d.size)})`)
+      .style('font-family', 'Arial')
+      .style('font-size', '11px')
+      .on('mouseover', (d, i, paths) => {
+        svg.select(`#data-disc-${i}`).style('opacity', opacityHover)
+        d3.select(paths[i]).style('font-weight', 'bold')
+      })
+      .on('mouseout', (d, i, paths) => {
+        svg.selectAll(`.data-disc`).style('opacity', opacity)
+        d3.select(paths[i]).style('font-weight', 'normal')
+        chartContainer.selectAll(".tooltip").remove()
+      })
+
+      const legendHMargin = (width - (legendContainer.node().getBBox().width))/2
+      const chartContainerBBox = chartContainer.node().getBBox()
+      const legendVMargin = chartContainerBBox.height + chartContainerBBox.y + chartPadding * 2
+
+      legendContainer.attr('transform', `translate(${legendHMargin}, ${legendVMargin})`)
+      totalHeight = legendContainer.node().getBBox().height + legendVMargin + 2*chartPadding
+
+      svg.attr("height", totalHeight)
+
+      //Helper functions
+      function scaleValue(value){
+        return `${valueScale(value).toLocaleString()}%`
       }
 
-      let svgStr = (new XMLSerializer()).serializeToString(svg)
+      function showTooltip(d, height) {
+        const labelXPosition = chartXPosition
+        const labelYPosition = height
 
-      return loadImage(`data:image/svg+xml;base64,${window.btoa(svgStr)}`)
+        let g = chartContainer
+          .style("cursor", "pointer")
+          .append("g")
+          .attr("class", "tooltip")
+          .style("opacity", 1)
+
+        g.append("text")
+          .text(d.name)
+          .attr('text-anchor', 'middle')
+          .attr('x', labelXPosition)
+          .attr('y', labelYPosition)
+          .attr('dy', 20)
+          .style('font-family', 'arial')
+          .style('font-size', '14px')
+
+        g.append("text")
+          .text(scaleValue(d.size))
+          .attr('text-anchor', 'middle')
+          .attr('x', labelXPosition)
+          .attr('y', labelYPosition)
+          .attr('dy', -5)
+          .style('font-family', 'arial')
+          .style('font-size', '30px')
+          .style('font-weight', 'bolder')
+      }
+  }
+
+  // Use this function to select color scheme to keep it consistent across visualizations
+  function omxColorInterpolator() {
+    // more color schemes https://observablehq.com/@d3/color-schemes
+    return d3.interpolateRainbow
+  }
+
+  function appendNoDataMessage(svg, options) {
+    const {
+      message = 'No data to display'
+    } = options
+
+    // not sure if there's a shorter way to get these
+    const width = Array.from(svg.node().attributes).find(x => x.name === 'width').value / 2
+    const height = Array.from(svg.node().attributes).find(x => x.name === 'height').value / 2
+
+    svg.style('background-color', '#eee')
+      .style('font-weight', 'bold')
+      .append('text')
+      .attr('text-anchor', 'middle')
+      .attr('x', width)
+      .attr('y', height)
+      .text(message)
+  }
+
+  function downloadSVG(svgId) {
+    const svg = document.querySelector(`svg#${svgId}`)
+    // Promisify the image-loading process
+    function loadImage(url) {
+      return new Promise(r => {
+        let i = new Image()
+        i.onload = (() => r(i))
+        i.src = url;
+      })
+    }
+
+    let svgStr = (new XMLSerializer()).serializeToString(svg)
+
+    return loadImage(`data:image/svg+xml;base64,${window.btoa(svgStr)}`)
       .then(img => {
         let canvas = document.createElement('canvas');
         let w = svg.width.baseVal.value
@@ -324,16 +320,16 @@
         canvas.height = h
         ctx.drawImage(img, 0, 0, w, h)
 
-        canvas.toBlob(function(blob){
+        canvas.toBlob(function (blob) {
           let link = document.createElement('a')
           link.download = `chart_${svg.id}.png`
           link.href = URL.createObjectURL(blob);
           link.click()
           link.remove()
           canvas.remove()
-        },'image/png')
+        }, 'image/png')
       })
-    }
+  }
 
   </script>
 

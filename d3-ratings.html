@@ -273,7 +273,9 @@
       ]
     }
 
-    ratings(ratingsData, "chart", { width: 400, height: 600 })
+    const empty = {}
+
+    ratings(empty, "chart", { width: 400, height: 600 })
 
     function ratings(data, containerId, options) {
 
@@ -287,13 +289,19 @@
         legendLineSize = 20
       } = options
 
-      const totalCompanies = data.companies_rated
-      const legendMaxSize = showLegend ? legendLineSize * data.children.length + chartPadding : 0
 
-      if(data === null){
+      if(data === null || data === {}){
+        const svg = d3.select(`#${containerId}`)
+          .append("svg")
+          .attr("id", containerId)
+          .attr("width", width)
+          .attr("height", 600)
+          .attr('font-family', 'Arial')
         appendNoDataMessage(svg, 'No ratings to display')
         return
       }
+      const totalCompanies = data.companies_rated
+      const legendMaxSize = showLegend ? legendLineSize * data.children.length + chartPadding : 0
 
       const color = d3.scaleSequential()
                       .domain([0, data.children.length])
