@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-    <style>
-      svg {
-        background-color: #eeeeee
-      }
-    </style>
-  </head>
-  <body>
-    <div id="chart"></div>
-  </body>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
-          integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
-          crossorigin="anonymous">
-  </script>
-  <script type="text/javascript">
-
-    const unspscData = {
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <style>
+  svg {
+    background-color: #eeeeee
+  }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+  <div id="chart2"></div>
+  <div id="chart3"></div>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.15.0/d3.min.js"
+integrity="sha256-m0QmIsBXcOMiETRmpT3qg2IQ/i0qazJA2miCHzOmS1Y="
+crossorigin="anonymous">
+</script>
+<script type="text/javascript">
+const unspscData = {
   "name": "UNSPSC Codes",
   "children": [
     {
@@ -54,7 +55,34 @@
         {
           "name": "32150000",
           "size": 1,
-          "children": []
+          "children": [
+            {
+              "name": "32150001",
+              "size": 1,
+              "children":[]
+            },
+            {
+              "name": "32150002",
+              "size": 1,
+              "children":[]
+            },
+            {
+              "name": "32150030",
+              "size": 1,
+              "children":[
+                {
+                  "name": "32150031",
+                  "size": 1,
+                  "children":[]
+                },
+                {
+                  "name": "32150032",
+                  "size": 1,
+                  "children":[]
+                },
+              ]
+            }
+          ]
         }
       ]
     },
@@ -119,7 +147,387 @@
   ]
 }
 
-    const naicsData = {
+const newCodes = {
+  "name": "UNSPSC",
+  "description": "Codes",
+  "size": 1,
+  "children": [
+    {
+      "name": "23000000",
+      "description": "L1",
+      "size": 1,
+      "children": [
+        {
+          "name": "23150000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "23153200",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "23153204",
+                  "description": "Welding robots",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "26000000",
+      "description": "L1",
+      "size": 1,
+      "children": [
+        {
+          "name": "26120000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "26120000",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "26120000",
+                  "description": "Electrical wire and cable and harness",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "26121600",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "26121600",
+                  "description": "Electrical cable and accessories",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "32000000",
+      "description": "L1",
+      "size": 1,
+      "children": [
+        {
+          "name": "32110000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "32111700",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "32111708",
+                  "description": "Impedance matching network",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "43000000",
+      "description": "L1",
+      "size": 1,
+      "children": [
+        {
+          "name": "43200000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "43201400",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43201404",
+                  "description": "Network interface cards",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43201409",
+                  "description": "Wireless network interface cards",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "43220000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "43220000",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43220000",
+                  "description": "Data Voice or Multimedia Network Equipment or Platforms and Accessories",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "43221700",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43221700",
+                  "description": "Fixed network equipment and components",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "43222500",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43222500",
+                  "description": "Network security equipment",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43222501",
+                  "description": "Firewall network security equipment",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43222502",
+                  "description": "VPN network security equipment",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "43222600",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43222608",
+                  "description": "Network repeaters",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43222612",
+                  "description": "Network switches",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43222619",
+                  "description": "Video networking equipment",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43222635",
+                  "description": "Network equipment upgrade kit",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "43223300",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43223306",
+                  "description": "Network system cabinet or enclosure",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43223307",
+                  "description": "Network system cabling box",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "43223308",
+                  "description": "Network system equipment rack",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "43230000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "43232800",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43232802",
+                  "description": "Network operating system enhancement software",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "43232900",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43232905",
+                  "description": "LAN software",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "43233200",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "43233204",
+                  "description": "Network security and virtual private network VPN equipment software",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "81000000",
+      "description": "L1",
+      "size": 1,
+      "children": [
+        {
+          "name": "81110000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "81111700",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "81111701",
+                  "description": "Wide area network communications design",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "81111702",
+                  "description": "Local area network communications design",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "81111706",
+                  "description": "Network planning services",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "name": "81111800",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "81111801",
+                  "description": "Computer or network or internet security",
+                  "size": 1,
+                  "children": []
+                },
+                {
+                  "name": "81111803",
+                  "description": "Local area network LAN maintenance or support",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "83000000",
+      "description": "L1",
+      "size": 1,
+      "children": [
+        {
+          "name": "83110000",
+          "description": "L2",
+          "size": 1,
+          "children": [
+            {
+              "name": "83111600",
+              "description": "L3",
+              "size": 1,
+              "children": [
+                {
+                  "name": "83111601",
+                  "description": "Telecommunication signal enhancement network services",
+                  "size": 1,
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+const naicsData = {
   "name": "NAICS Codes",
   "children": [
     {
@@ -151,75 +559,85 @@
   ]
 }
 
-// TODO: I need to review this in more detail and remove unneeded code + tweak functionality
-function treemap_chart(data, containerId) {
+treemap(newCodes, 'chart')
+treemap(naicsData, 'chart2')
+// treemap({}, 'chart3')
 
-  console.log(data);
-
-  const margin = {
-          top: 24,
-          right: 0,
-          bottom: 0,
-          left: 0
-      }
-  const width = $(".products_visualization").width() - 34 //640
-  const height = 530
+function treemap(data, containerId, options = {}){
+  const {
+    width = 500,
+    height = 500,
+    titleHeight = 25,
+  } = options
+  const margin = { top: 0, right: 0, bottom: 0, left: 0 }
   const formatNumber = d3.format(",d")
   let transitioning = false
 
-
-  if ($(".visualization-display").length == 0){
-    width = $("#visualizations_carousel").width() - 34
-  }
-
-  // FIXME: These is not scaling anything
   const x = d3.scaleLinear().domain([0, width]).range([0, width])
   const y = d3.scaleLinear()
-      .domain([0, height - margin.top - margin.bottom])
-      .range([0, height - margin.top - margin.bottom])
+    .domain([0, height])
+    .range([0, height - margin.top - margin.bottom - titleHeight])
+
+  // const color = d3.scaleSequential()
+  //   .domain([0,99])
+  //   .interpolator(omxColorInterpolator())
 
   const color = d3.scaleOrdinal()
-      .range(d3.schemeCategory10.map(c => {
-                                      c = d3.rgb(c)
-                                      c.opacity = 0.6
-                                      return c
-                                  }))
+  .range(d3.schemeCategory10.map(c => {
+    c = d3.rgb(c)
+    c.opacity = 0.6
+    return c
+  }))
 
   let treemap= null
   let svg = null
   let grandparent= null
 
+  if(data === {}){
+    const svg = d3.select(`#${containerId}`)
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .style("font-family", "Arial")
+
+    appendNoDataMessage(svg, {})
+    return -1
+  }
+
   updateDrillDown()
 
   function updateDrillDown() {
-    if (svg) {
+    if (svg){
       svg.selectAll("*").remove()
     }
     else {
       svg = d3.select(`#${containerId}`)
         .append("svg")
-        .attr('id',containerId)
+        .attr('id', containerId)
         .attr("width", width)
-        .attr("height", height - margin.bottom - margin.top)
-        .style("margin-left", -margin.left + "px")
-        .style("margin-right", -margin.right + "px")
+        .attr("height", height)
         .style("font-family", "Arial")
         .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .style("font-size", "12px")
         .style("shape-rendering", "crispEdges")
 
+      // Chart title
       grandparent = svg.append("g")
-        .attr("class", "grandparent")
+        .attr('id', 'chart-title')
+        .attr('class', 'grandparent')
+        .attr("transform", `translate(${margin.left},${margin.top})`)
+        .style("font-size", "16px")
 
       grandparent.append("rect")
         .attr("y", -margin.top)
         .attr("width", width)
-        .attr("height", margin.top)
+        .attr("height", titleHeight)
+        .style("fill", "#ccc")
 
       grandparent.append("text")
-        .attr("x", 6)
-        .attr("y", 6 - margin.top)
-        .attr("dy", ".75em")
+        .attr('x', 6)
+        .attr('y', 6 - margin.top)
+        .attr('dy', '.75em')
 
       treemap = d3.treemap()
         .tile(d3.treemapResquarify.ratio(height / width * 0.5 * (1 + Math.sqrt(5))))
@@ -228,12 +646,11 @@ function treemap_chart(data, containerId) {
         .paddingInner(1)
     }
 
-    let root = d3.hierarchy(data)
-      .eachBefore(d => {
-        d.id = (d.parent ? d.parent.id + "." : "") + d.data.name
-      })
-      .sum(d => d.size)
-      .sort((a, b) => b.height - a.height || b.value - a.value )
+    let root = d3.hierarchy(data).eachBefore(d => {
+      d.id = (d.parent ? d.parent.id + "." : "") + d.data.name
+    })
+    .sum(d => d.size)
+    .sort((a, b) => b.height - a.height || b.value - a.value )
 
     initialize(root)
     accumulate(root)
@@ -243,10 +660,10 @@ function treemap_chart(data, containerId) {
   }
 
   function initialize(root) {
-      root.x = root.y = 0
-      root.x1 = width
-      root.y1 = height
-      root.depth = 0
+    root.x = root.y = 0
+    root.x1 = width
+    root.y1 = height
+    root.depth = 0
   }
 
   // Aggregate the values for internal nodes. This is normally done by the
@@ -254,11 +671,9 @@ function treemap_chart(data, containerId) {
   // We also take a snapshot of the original children (_children) to avoid
   // the children being overwritten when when layout is computed.
   function accumulate(d) {
-      //console.log('accumulate called ' + d.data.name)
-      return (d._children = d.children) ?
-          d.value = d.children.reduce(function(p, v) {
-              return p + accumulate(v)
-          }, 0) : d.value
+    // console.log('accumulate called ' + d.data.name)
+    return (d._children = d.children) ?
+      d.value = d.children.reduce((p, v) => p + accumulate(v), 0) : d.value
   }
 
   // Compute the treemap layout recursively such that each group of siblings
@@ -269,211 +684,224 @@ function treemap_chart(data, containerId) {
   // of sibling was laid out in 1×1, we must rescale to fit using absolute
   // coordinates. This lets us use a viewport to zoom.
   function layout(d) {
-      if (d._children) {
-          //    treemap.nodes({_children: d._children})
-          //    treemap(d)
-          d._children.forEach(function(c) {
-              //c.x0 = d.x0 + c.x0 * (d.x1 - d.x0)
-              //c.y0 = d.y0 + c.y0 * (d.y1 - d.y0)
-              //c.x1 *= d.x1
-              //c.y1 *= d.y1
-              c.x0 = d.x0 + c.x0 * d.x1
-              c.y0 = d.y0 + c.y0 * d.y1
-              c.x1 *= (d.x1 - d.x0)
-              c.y1 *= (d.y1 - d.y0)
-              c.parent = d
-              layout(c)
-          })
-      }
+    if (d._children) {
+      //    treemap.nodes({_children: d._children})
+      //    treemap(d)
+      d._children.forEach(function(c) {
+        // c.x0 = d.x0 + c.x0 * (d.x1 - d.x0)
+        // c.y0 = d.y0 + c.y0 * (d.y1 - d.y0)
+        // c.x1 *= d.x1
+        // c.y1 *= d.y1
+        c.x0 = d.x0 + c.x0 * d.x1
+        c.y0 = d.y0 + c.y0 * d.y1
+        c.x1 *= (d.x1 - d.x0)
+        c.y1 *= (d.y1 - d.y0)
+        c.parent = d
+        layout(c)
+      })
+    }
   }
 
   function display(d) {
-      grandparent
-          .datum(d.parent)
-          .on("click", transition)
-          .select("text")
-          .text(name(d))
+    grandparent
+      .datum(d.parent)
+      .on("click", transition)
+      .select("text")
+      .text(name(d))
 
-      var g1 = svg.insert("g", ".grandparent")
-          .datum(d)
-          .attr("class", "depth")
+    const g1 =
+      svg
+      .insert("g", ".grandparent")
+      .datum(d)
+      .attr("class", "depth")
+      .attr("transform", `translate(${margin.left},${margin.top + titleHeight})`)
 
-      var g = g1.selectAll("g")
-          .data(d._children)
-          .enter().append("g")
-      g.filter(function(d) {
-              return d._children
-          })
-          .classed("children", true)
-          .on("click", transition)
+    const g = g1.selectAll("g")
+              .data(d._children)
+              .enter()
+              .append("g")
 
-      var children = g.selectAll(".child")
-          .data(function(d) {
-              return d._children || [d]
-          })
-          .enter().append("g")
+    g.filter(d => d._children)
+      .classed("children", true)
+      .on("click", transition)
 
-      children.append("rect")
-          .attr("class", "child")
-          .call(rect)
-          .append("title")
-          .text(function(d) {
-              return d.data.name + " (" + formatNumber(d.value) + ")"
-          })
+    const children = g.selectAll(".child")
+                      .data(d => d._children || [d])
+                      .enter()
+                      .append("g")
 
-      children.append("text")
-          .attr("class", "ctext")
-          .text(function(d) {
-              return d.data.name
-          })
-          .call(text2)
+    children
+      .append("rect")
+      .attr("class", "child")
+      .call(rect)
+      .append("title")
+      .text(d => d.data.name)
 
-      g.append("rect")
-          .attr("class", "parent")
-          .call(rect)
+    // bottom-left - child code label
+    children
+      .append("text")
+      .attr("class", "ctext")
+      .text(d => d.data.name)
+      .call(text2)
 
-      var t = g.append("text")
-          .attr("class", "ptext")
-          .attr("dy", ".75em")
+    g.append("rect")
+      .attr("class", "parent")
+      .call(rect)
 
-      t.append("tspan")
-          .text(function(d) {
-              return d.data.name
-          })
+    const t = g.append("text")
+                .attr("class", "ptext")
+                .attr("dy", ".75em")
 
-      t.append("tspan")
-          .attr("dy", "1.0em")
-          .text(function(d) {
-              return formatNumber(d.value)
-          })
+    // top-right code label
+    t.append("tspan").text(d => {
+      label = d.data.name
+      // label += d.data.children.length > 1 ? ` (${d.data.children.length})` : ''
+      return label
+    })
+    t.call(text)
 
-      t.call(text)
+    let tooltip = d3.select(`#${containerId}`)
+                      .append("div")
+                      .style("font-family", "Arial")
+                      .style("font-size", "10px")
+                      .style("position", "absolute")
+                      .style("visibility", "hidden")
+                      .style("background-color", "#ffffff")
+                      .style("padding", "2px")
 
-      //TODO: wat --
-      g.selectAll("rect").style("fill", d => color(d.data.name))
+    g.selectAll("rect")
+      .style("fill", d => color(parseInt(d.data.name.substr(0,2))))
+      .on("mouseenter", (d, i, paths) => {
+        tooltip
+          .style("visibility", "visible")
+          .style("top", `${event.pageY + 10}px`)
+          .style("left", `${event.pageX + 10}px`)
+          .text(x => d.data.description)
+      })
+      .on("mousemove", () => {
+        tooltip
+          .style("top", `${event.pageY + 10}px`)
+          .style("left", `${event.pageX + 10}px`);
+      })
+      .on("mouseout", () => {
+         tooltip.style("visibility", "hidden");
+       })
 
-      function transition(d) {
-          if (transitioning || !d) return
-          transitioning = true
-          var g2 = display(d),
-              t1 = g1.transition().duration(750),
-              t2 = g2.transition().duration(750)
 
-          // Update the domain only after entering new elements.
-          //x.domain([d.x0, d.x0 + d.x1])
-          //y.domain([d.y0, d.y0 + d.y1])
-          x.domain([d.x0, d.x0 + (d.x1 - d.x0)])
-          y.domain([d.y0, d.y0 + (d.y1 - d.y0)])
+    function transition(d) {
+      if (transitioning || !d) return
 
-          // Enable anti-aliasing during the transition.
-          svg.style("shape-rendering", null)
+      transitioning = true
 
-          // Draw child nodes on top of parent nodes.
-          svg.selectAll(".depth").sort(function(a, b) {
-              //console.log('.depth sort a ' + a.depth + ' b ' + b.depth)
-              return a.depth - b.depth
-          })
+      const g2 = display(d)
+      const t1 = g1.transition().duration(250)
+      const t2 = g2.transition().duration(250)
 
-          // Fade-in entering text.
-          g2.selectAll("text").style("fill-opacity", 0)
+      // Update the domain only after entering new elements.
+      //x.domain([d.x0, d.x0 + d.x1])
+      //y.domain([d.y0, d.y0 + d.y1])
+      x.domain([d.x0, d.x0 + (d.x1 - d.x0)])
+      y.domain([d.y0, d.y0 + (d.y1 - d.y0)])
 
-          // Transition to the new view.
-          t1.selectAll(".ptext").call(text).style("fill-opacity", 0)
-          t2.selectAll(".ptext").call(text).style("fill-opacity", 1)
-          t1.selectAll(".ctext").call(text2).style("fill-opacity", 0)
-          t2.selectAll(".ctext").call(text2).style("fill-opacity", 1)
-          t1.selectAll("rect").call(rect)
-          t2.selectAll("rect").call(rect)
+      // Enable anti-aliasing during the transition.
+      svg.style("shape-rendering", null)
 
-          // Remove the old node when the transition is finished.
-          t1.remove().on("end", function() {
-              svg.style("shape-rendering", "crispEdges")
-              transitioning = false
-          })
-      }
-      return g
+      // Draw child nodes on top of parent nodes.
+      svg.selectAll(".depth").sort((a, b) => a.depth - b.depth)
+
+      // Fade-in entering text.
+      g2.selectAll("text").style("fill-opacity", 0)
+
+      // Transition to the new view.
+      t1.selectAll(".ptext").call(text).style("fill-opacity", 0)
+      t2.selectAll(".ptext").call(text).style("fill-opacity", 1)
+
+      t1.selectAll(".ctext").call(text2).style("fill-opacity", 0)
+      t2.selectAll(".ctext").call(text2).style("fill-opacity", 1)
+
+      t1.selectAll("rect").call(rect)
+      t2.selectAll("rect").call(rect)
+
+      // Remove the old node when the transition is finished.
+      t1.remove().on("end", () => {
+        svg.style("shape-rendering", "crispEdges")
+        transitioning = false
+      })
+    }
+
+    return g
   }
 
   function text(text) {
     text.selectAll("tspan")
-      .attr("x", function(d) {
-          return x(d.x0) + 6
-      })
+    .attr("x", function(d) {
+      return x(d.x0) + 6
+    })
     text.attr("x", function(d) {
-            return x(d.x0) + 6
-        })
-        .attr("y", function(d) {
-            return y(d.y0) + 3
-        })
-        .style("opacity", function(d) {
-            var w = x(d.x1) - x(d.x0)
-            //console.log("text opacity setting textlength " + this.getComputedTextLength() + " d size " + w)
-            return this.getComputedTextLength() < w - 6 ? 1 : 0
-        })
+      return x(d.x0) + 6
+    })
+    .attr("y", function(d) {
+      return y(d.y0) + 3
+    })
+    .style("opacity", function(d) {
+      const w = x(d.x1) - x(d.x0)
+      return this.getComputedTextLength() < w - 6 ? 1 : 0
+    })
   }
 
   function text2(text) {
     text.attr("x", function(d) {
-          return x(d.x1) - this.getComputedTextLength() - 6
-        })
-        .attr("y", function(d) {
-          return y(d.y1) - 6
-        })
-        .style("opacity", function(d) {
-          var w = x(d.x1) - x(d.x0)
-          //console.log("text2 opacity setting textlength " + this.getComputedTextLength() + " d size " + w)
-          return this.getComputedTextLength() < w - 6 ? 1 : 0
-        })
+      return x(d.x1) - this.getComputedTextLength() - 6
+    })
+    .attr("y", function(d) {
+      return y(d.y1) - 6
+    })
+    .style("opacity", function(d) {
+      const w = x(d.x1) - x(d.x0)
+      // console.log("text2 opacity setting textlength " + this.getComputedTextLength() + " d size " + w)
+      return this.getComputedTextLength() < w - 6 ? 1 : 0
+    })
   }
 
   function rect(rect) {
-    rect.attr("x", function(d) {
-            return x(d.x0)
-        })
-        .attr("y", function(d) {
-            return y(d.y0)
-        })
-        .attr("width", function(d) {
-            var w = x(d.x1) - x(d.x0)
-            //console.log('id ' + d.id + ' rect width ' + w)
-            return w
-        })
-        .attr("height", function(d) {
-            var h = y(d.y1) - y(d.y0)
-            //console.log('id ' + d.id + ' rect height ' + h)
-            return h
-        })
+    rect.attr("x", d => x(d.x0))
+        .attr("y", d => y(d.y0))
+        .attr("width", d => x(d.x1) - x(d.x0))
+        .attr("height", d => y(d.y1) - y(d.y0))
   }
 
   function name(d) {
-    return d.parent ? name(d.parent) + " / " + d.data.name + " (" + formatNumber(d.value) + ")" : d.data.name + " (" + formatNumber(d.value) + ")"
+    if(d.parent){
+      return `${name(d.parent)} / ${d.data.name}`
+    }
+    else {
+      return `${d.data.name}`
+    }
   }
 }
 
 
+function omxColorInterpolator(){
+  // more color schemes https://observablehq.com/@d3/color-schemes
+  return d3.interpolateRainbow
+}
 
+function appendNoDataMessage(svg, options){
+  const {
+    message = 'No data to display'
+  } = options
 
-    function omxColorInterpolator(){
-      // more color schemes https://observablehq.com/@d3/color-schemes
-      return d3.interpolateRainbow
-    }
+  // not sure if there's a shorter way to get these
+  const width = Array.from(svg.node().attributes).find(x => x.name === 'width').value / 2
+  const height = Array.from(svg.node().attributes).find(x => x.name === 'height').value / 2
 
-    function appendNoDataMessage(svg, options){
-      const {
-        message = 'No data to display'
-      } = options
-
-      // not sure if there's a shorter way to get these
-      const width = Array.from(svg.node().attributes).find(x => x.name === 'width').value / 2
-      const height = Array.from(svg.node().attributes).find(x => x.name === 'height').value / 2
-
-      svg.style('background-color', '#eee')
-        .style('font-weight', 'bold')
-        .append('text')
-        .attr('text-anchor', 'middle')
-        .attr('x', width)
-        .attr('y', height)
-        .text(message)
-    }
-  </script>
+  svg.style('background-color', '#eee')
+  .style('font-weight', 'bold')
+  .append('text')
+  .attr('text-anchor', 'middle')
+  .attr('x', width)
+  .attr('y', height)
+  .text(message)
+}
+</script>
 </html>
