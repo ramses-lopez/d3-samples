@@ -738,11 +738,11 @@ function treemap(data, containerId, options = {}){
       .text(d => d.data.name)
 
     // bottom-left - child code label
-    children
-      .append("text")
-      .attr("class", "ctext")
-      .text(d => d.data.name)
-      .call(text2)
+    // children
+    //   .append("text")
+    //   .attr("class", "ctext")
+    //   .text(d => d.data.name)
+    //   .call(text2)
 
     g.append("rect")
       .attr("class", "parent")
