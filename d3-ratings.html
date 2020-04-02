@@ -278,9 +278,9 @@
     ratings(empty, "chart", { width: 400, height: 600 })
 
     function ratings(data, containerId, options) {
-
       const {
         width = 600,
+        height = 400,
         chartContainerWidth = 300,
         chartPadding = 10,
         placeholderLabel = 'Internal Ratings',
@@ -289,24 +289,24 @@
         legendLineSize = 20
       } = options
 
-
-      if(data === null || data === {}){
+      if(!data || !data.children || data.companies_rated === 0){
         const svg = d3.select(`#${containerId}`)
           .append("svg")
           .attr("id", containerId)
           .attr("width", width)
-          .attr("height", 600)
+          .attr("height", height)
           .attr('font-family', 'Arial')
-        appendNoDataMessage(svg, 'No ratings to display')
-        return
+
+        appendNoDataMessage(svg, {})
+        return -1
       }
+
       const totalCompanies = data.companies_rated
       const legendMaxSize = showLegend ? legendLineSize * data.children.length + chartPadding : 0
-
       const color = d3.scaleSequential()
                       .domain([0, data.children.length])
                       .interpolator(omxColorInterpolator())
-      const radius = chartContainerWidth/2 - chartPadding
+      const radius = (chartContainerWidth / 2) - chartPadding
       const x = d3.scaleLinear().range([0, 2 * Math.PI])
       const y = d3.scaleSqrt().range([0, radius])
       const partition = d3.partition()
@@ -333,6 +333,7 @@
         svg.append('g')
           .attr('id', 'chart-container')
           .attr('width', chartContainerWidth)
+          .attr('height', chartContainerHeight)
           .attr("transform", `translate(${width/2}, ${radius + chartPadding})`)
 
       const labelContainer = svg.append('g')
@@ -474,23 +475,6 @@
         .append('title')
         .text((d, i) =>  d.data.name);
 
-
-      // svg.append('line')
-      //   .attr('x1', 0)
-      //   .attr('x2', '100%')
-      //   .attr('y1', height/2)
-      //   .attr('y2', height/2)
-      //   .attr('stroke', 'red')
-      //   .attr('stroke-dasharray', '4')
-
-      // svg.append('line')
-      //   .attr('y1', 0)
-      //   .attr('y2', '100%')
-      //   .attr('x1', width/2)
-      //   .attr('x2', width/2)
-      //   .attr('stroke', 'red')
-      //   .attr('stroke-dasharray', '4')
-
       // HELPER FUNCTIONS
       function ellipsis(str){
         return str.length > maxLabelSize ? str.substr(0, maxLabelSize - 3) + "..." : str
@@ -499,9 +483,7 @@
       function stars(value){
         const numStars = parseInt(value)
         let str = ''
-        for(let i = 0; i < numStars; i++){
-          str += '★'
-        }
+        for(let i = 0; i < numStars; i++){ str += '★' }
         return str
       }
 
@@ -509,7 +491,9 @@
         return Math.round((value / total)*100 + Number.EPSILON)
       }
 
+      return 0
     }
+
 
     // Use this function to select color scheme to keep it consistent across visualizations
     function omxColorInterpolator(){
